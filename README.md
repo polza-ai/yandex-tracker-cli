@@ -11,6 +11,10 @@
   <img src="https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white" alt="TypeScript">
 </p>
 
+<p align="center">
+  <img src="./demo.gif" alt="tracker demo" width="720">
+</p>
+
 ---
 
 - **Для людей** — цветные таблицы, спиннеры, интерактивная настройка
