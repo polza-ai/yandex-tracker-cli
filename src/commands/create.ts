@@ -16,6 +16,7 @@ export function registerCreateCommand(program: Command): void {
     .option('-p, --priority <priority>', 'Приоритет (blocker, critical, major, normal, minor)')
     .option('-a, --assignee <login>', 'Исполнитель')
     .option('--parent <key>', 'Родительская задача')
+    .option('--sprint <id>', 'Спринт')
     .option('--tag <tags...>', 'Теги')
     .option('--json', 'Вывод в JSON')
     .action(async (opts) => {
@@ -37,6 +38,7 @@ export function registerCreateCommand(program: Command): void {
           priority: opts.priority,
           assignee: opts.assignee,
           parent: opts.parent,
+          sprint: opts.sprint ? parseInt(opts.sprint, 10) : undefined,
           tags: opts.tag,
         });
 

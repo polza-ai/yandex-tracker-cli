@@ -14,6 +14,7 @@ export function registerUpdateCommand(program: Command): void {
     .option('-d, --description <text>', 'Новое описание')
     .option('-a, --assignee <login>', 'Новый исполнитель')
     .option('-p, --priority <priority>', 'Новый приоритет')
+    .option('--sprint <id>', 'Назначить спринт')
     .option('--tag <tags...>', 'Теги')
     .option('--json', 'Вывод в JSON')
     .action(async (key: string, opts) => {
@@ -27,10 +28,11 @@ export function registerUpdateCommand(program: Command): void {
         if (opts.description) params.description = opts.description;
         if (opts.assignee) params.assignee = opts.assignee;
         if (opts.priority) params.priority = opts.priority;
+        if (opts.sprint) params.sprint = [{ id: opts.sprint }];
         if (opts.tag) params.tags = opts.tag;
 
         if (Object.keys(params).length === 0) {
-          console.error('Укажите что обновить: --summary, --description, --assignee, --priority, --tag');
+          console.error('Укажите что обновить: --summary, --description, --assignee, --priority, --sprint, --tag');
           process.exit(1);
         }
 
