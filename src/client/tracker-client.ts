@@ -130,6 +130,26 @@ export class TrackerClient {
     return data;
   }
 
+  async uploadTempAttachment(filePath: string, filename: string): Promise<{ id: string; name: string; [k: string]: unknown }> {
+    const FormData = (await import('form-data')).default;
+    const form = new FormData();
+    form.append('file', createReadStream(filePath), filename);
+    const { data } = await this.http.post('/attachments/', form, {
+      baseURL: 'https://api.tracker.yandex.net/v3',
+      headers: { ...form.getHeaders() },
+    });
+    return data as { id: string; name: string };
+  }
+
+  async addCommentV3(key: string, text: string, attachmentIds?: string[]): Promise<Comment> {
+    const body: Record<string, unknown> = { text };
+    if (attachmentIds?.length) body.attachmentIds = attachmentIds;
+    const { data } = await this.http.post<Comment>(`/issues/${key}/comments`, body, {
+      baseURL: 'https://api.tracker.yandex.net/v3',
+    });
+    return data;
+  }
+
   // Worklogs
 
   async getWorklogs(key: string): Promise<Worklog[]> {
