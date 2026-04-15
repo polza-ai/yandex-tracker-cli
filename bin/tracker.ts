@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { registerInitCommand } from '../src/commands/init.js';
@@ -16,8 +16,13 @@ import { registerLinkCommand } from '../src/commands/link.js';
 import { formatError } from '../src/utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+let pkgDir = dirname(__filename);
+while (!existsSync(join(pkgDir, 'package.json'))) {
+  const parent = dirname(pkgDir);
+  if (parent === pkgDir) break;
+  pkgDir = parent;
+}
+const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf-8'));
 
 const program = new Command();
 
