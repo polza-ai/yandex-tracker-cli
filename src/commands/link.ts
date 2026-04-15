@@ -7,11 +7,21 @@ import { jsonOutput } from '../formatters/json.js';
 import { formatLinks } from '../formatters/table.js';
 import chalk from 'chalk';
 
+const linkTypeMap: Record<string, string> = {
+  relates: 'relates',
+  blocks: 'is dependent by',
+  depends: 'depends on',
+  duplicates: 'duplicates',
+  'is duplicated by': 'is duplicated by',
+  parent: 'is parent task for',
+  subtask: 'is subtask for',
+};
+
 export function registerLinkCommand(program: Command): void {
   program
     .command('link <key> [target]')
     .description('Связать задачи или показать связи')
-    .option('-t, --type <type>', 'Тип связи (relates, blocks, depends, duplicates)', 'relates')
+    .option('-t, --type <type>', 'Тип связи (relates, blocks, depends, duplicates, parent, subtask)', 'relates')
     .option('--json', 'Вывод в JSON')
     .action(async (key: string, target: string | undefined, opts) => {
       try {
@@ -30,7 +40,8 @@ export function registerLinkCommand(program: Command): void {
         }
 
         const resolvedTarget = resolveKey(target, config.queue);
-        const link = await client.createLink(resolvedKey, resolvedTarget, opts.type);
+        const relationship = linkTypeMap[opts.type] ?? opts.type;
+        const link = await client.createLink(resolvedKey, resolvedTarget, relationship);
 
         if (opts.json) {
           process.stdout.write(jsonOutput(link) + '\n');

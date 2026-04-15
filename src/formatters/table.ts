@@ -13,10 +13,23 @@ function fmtDateShort(iso?: string): string {
   return dayjs(iso).format('DD.MM.YYYY');
 }
 
+function fmtDuration(iso?: string): string {
+  if (!iso) return '';
+  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if (!match) return iso;
+  const h = parseInt(match[1] || '0', 10);
+  const m = parseInt(match[2] || '0', 10);
+  const parts: string[] = [];
+  if (h > 0) parts.push(`${h}ч`);
+  if (m > 0 || parts.length === 0) parts.push(`${m}м`);
+  return parts.join(' ');
+}
+
 const statusColors: Record<string, (s: string) => string> = {
   open: chalk.white,
   inProgress: chalk.yellow,
   readyForReview: chalk.cyan,
+  inReview: chalk.cyan,
   testing: chalk.magenta,
   closed: chalk.green,
   resolved: chalk.green,
@@ -149,7 +162,7 @@ export function formatWorklogs(worklogs: Worklog[]): string {
   for (const w of worklogs) {
     table.push([
       w.createdBy.display,
-      w.duration,
+      fmtDuration(w.duration),
       fmtDateShort(w.start),
       w.comment ?? '',
     ]);

@@ -131,6 +131,7 @@ export function registerTimeCommand(program: Command): void {
             const isoDuration = parseDuration(duration);
             const worklog = await client.addWorklog(resolvedKey, {
               duration: isoDuration,
+              start: new Date().toISOString(),
               comment: opts.comment,
             });
 

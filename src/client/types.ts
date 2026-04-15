@@ -111,6 +111,17 @@ export interface IssueLink {
   status: Status;
 }
 
+export interface Attachment {
+  self: string;
+  id: string;
+  name: string;
+  content: string;
+  mimetype: string;
+  size: number;
+  createdBy?: UserRef;
+  createdAt?: string;
+}
+
 export interface QueueInfo {
   self: string;
   id: number;

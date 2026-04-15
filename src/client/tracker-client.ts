@@ -1,8 +1,10 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import { createReadStream } from 'node:fs';
 import { paginate, collectAll } from './pagination.js';
+import type { Readable } from 'node:stream';
 import type {
   Issue, Transition, Comment, Worklog, ChecklistItem,
-  IssueLink, CreateIssueParams, IssueFilter, WorklogParams,
+  IssueLink, CreateIssueParams, IssueFilter, WorklogParams, Attachment,
   Sprint, UserRef, QueueInfo
 } from './types.js';
 
@@ -58,9 +60,9 @@ export class TrackerClient {
 
   async searchIssues(filter: IssueFilter): Promise<Issue[]> {
     if (filter.query) {
-      const body: Record<string, unknown> = { query: filter.query };
-      if (filter.orderBy) body.order = filter.orderBy;
-      return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', body));
+      let query = filter.query;
+      if (filter.orderBy) query += ` "Sort by": ${filter.orderBy}`;
+      return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', { query }));
     }
 
     const conditions: string[] = [];
@@ -75,12 +77,12 @@ export class TrackerClient {
     }
     if (filter.sprint) conditions.push(`Sprint: "${filter.sprint}"`);
 
-    const query = conditions.length > 0 ? conditions.join(' AND ') : undefined;
-    const body: Record<string, unknown> = {};
-    if (query) body.query = query;
-    if (filter.orderBy) body.order = filter.orderBy;
+    let query = conditions.length > 0 ? conditions.join(' AND ') : '';
+    if (filter.orderBy) query += ` "Sort by": ${filter.orderBy}`;
 
-    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', body));
+    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post',
+      query ? { query } : {}
+    ));
   }
 
   async createIssue(params: CreateIssueParams): Promise<Issue> {
@@ -181,6 +183,36 @@ export class TrackerClient {
       issue: target,
     });
     return data;
+  }
+
+  // Attachments
+
+  async getAttachments(key: string): Promise<Attachment[]> {
+    const { data } = await this.http.get<Attachment[]>(`/issues/${key}/attachments`);
+    return data;
+  }
+
+  async uploadAttachment(key: string, filePath: string, filename: string): Promise<Attachment> {
+    const stream = createReadStream(filePath);
+    const { data } = await this.http.post<Attachment>(
+      `/issues/${key}/attachments`,
+      stream,
+      {
+        params: { filename },
+        headers: { 'Content-Type': 'application/octet-stream' },
+      }
+    );
+    return data;
+  }
+
+  async downloadAttachment(key: string, attachmentId: string): Promise<{ name: string; stream: Readable }> {
+    const attachments = await this.getAttachments(key);
+    const att = attachments.find(a => a.id === attachmentId);
+    const name = att?.name ?? 'attachment';
+    const { data } = await this.http.get(att?.content ?? `/attachments/${attachmentId}`, {
+      responseType: 'stream',
+    });
+    return { name, stream: data as Readable };
   }
 
   // Queues

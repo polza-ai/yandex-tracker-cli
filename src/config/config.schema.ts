@@ -19,7 +19,7 @@ export const projectConfigSchema = z.object({
   statusMap: z.record(z.string()).default({
     open: 'open',
     inProgress: 'inProgress',
-    review: 'readyForReview',
+    review: 'inReview',
     testing: 'testing',
     closed: 'closed',
   }),

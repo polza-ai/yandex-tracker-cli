@@ -62,7 +62,7 @@ export async function loadConfig(): Promise<ResolvedConfig> {
     statusMap: project?.statusMap ?? {
       open: 'open',
       inProgress: 'inProgress',
-      review: 'readyForReview',
+      review: 'inReview',
       testing: 'testing',
       closed: 'closed',
     },

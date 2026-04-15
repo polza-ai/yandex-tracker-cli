@@ -13,6 +13,9 @@ import { registerCommentCommand } from '../src/commands/comment.js';
 import { registerTimeCommand } from '../src/commands/time.js';
 import { registerChecklistCommand } from '../src/commands/checklist.js';
 import { registerLinkCommand } from '../src/commands/link.js';
+import { registerUpdateCommand } from '../src/commands/update.js';
+import { registerTransitionsCommand } from '../src/commands/transitions.js';
+import { registerAttachCommand } from '../src/commands/attach.js';
 import { formatError } from '../src/utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +44,9 @@ registerCommentCommand(program);
 registerTimeCommand(program);
 registerChecklistCommand(program);
 registerLinkCommand(program);
+registerUpdateCommand(program);
+registerTransitionsCommand(program);
+registerAttachCommand(program);
 
 program.hook('postAction', () => {});
 
