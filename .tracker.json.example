@@ -1,0 +1,12 @@
+{
+  "queue": "BACKEND",
+  "boardId": 42,
+  "branchPrefix": "feature",
+  "statusMap": {
+    "open": "open",
+    "inProgress": "inProgress",
+    "review": "readyForReview",
+    "testing": "testing",
+    "closed": "closed"
+  }
+}
