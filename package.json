@@ -1,6 +1,6 @@
 {
   "name": "@polza-ai/yandex-tracker-cli",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "CLI tool for Yandex Tracker — for humans and AI agents",
   "license": "MIT",
   "repository": {

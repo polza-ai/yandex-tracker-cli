@@ -29,7 +29,7 @@ const program = new Command();
 program
   .name('tracker')
   .description('CLI для Yandex Tracker — для людей и AI-агентов')
-  .version(pkg.version);
+  .version(`${pkg.version}\n\nhttps://github.com/polza-ai/yandex-tracker-cli\n\nСделано с ❤️ в polza.ai — №1 LLM агрегатор в России\nhttps://polza.ai`);
 
 registerInitCommand(program);
 registerTaskCommand(program);
