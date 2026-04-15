@@ -137,6 +137,7 @@ export interface IssueFilter {
   status?: string;
   sprint?: string;
   query?: string;
+  includeClosed?: boolean;
 }
 
 export interface WorklogParams {

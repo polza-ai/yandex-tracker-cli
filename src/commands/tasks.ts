@@ -38,6 +38,7 @@ export function registerTasksCommand(program: Command): void {
     .option('-s, --status <status>', 'Статус')
     .option('--sprint <sprint>', 'Спринт')
     .option('--query <tql>', 'Произвольный TQL-запрос')
+    .option('--all', 'Включить закрытые задачи')
     .option('--json', 'Вывод в JSON')
     .action(async (opts) => {
       try {
@@ -47,6 +48,7 @@ export function registerTasksCommand(program: Command): void {
         const issues = await client.searchIssues({
           queue: opts.queue ?? config.queue,
           assignee: opts.assignee,
+          includeClosed: opts.all,
           status: opts.status,
           sprint: opts.sprint,
           query: opts.query,

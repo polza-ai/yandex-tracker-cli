@@ -68,7 +68,11 @@ export class TrackerClient {
     if (filter.assignee) {
       conditions.push(filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`);
     }
-    if (filter.status) conditions.push(`Status: "${filter.status}"`);
+    if (filter.status) {
+      conditions.push(`Status: "${filter.status}"`);
+    } else if (!filter.includeClosed) {
+      conditions.push('Resolution: empty()');
+    }
     if (filter.sprint) conditions.push(`Sprint: "${filter.sprint}"`);
 
     const query = conditions.length > 0 ? conditions.join(' AND ') : undefined;
