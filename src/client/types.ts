@@ -109,6 +109,16 @@ export interface IssueLink {
   status: Status;
 }
 
+export interface QueueInfo {
+  self: string;
+  id: number;
+  key: string;
+  name: string;
+  description?: string;
+  lead?: UserRef;
+  issueTypesConfig?: { issueType: { key: string; display: string } }[];
+}
+
 export interface CreateIssueParams {
   queue: string;
   summary: string;

@@ -3,7 +3,7 @@ import { paginate, collectAll } from './pagination.js';
 import type {
   Issue, Transition, Comment, Worklog, ChecklistItem,
   IssueLink, CreateIssueParams, IssueFilter, WorklogParams,
-  Sprint, UserRef
+  Sprint, UserRef, QueueInfo
 } from './types.js';
 
 export interface TrackerClientConfig {
@@ -176,6 +176,12 @@ export class TrackerClient {
       issue: target,
     });
     return data;
+  }
+
+  // Queues
+
+  async getQueues(): Promise<QueueInfo[]> {
+    return collectAll(paginate<QueueInfo>(this.http, '/queues'));
   }
 
   // User

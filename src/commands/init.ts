@@ -3,6 +3,7 @@ import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { saveGlobalConfig, saveProjectConfig, GLOBAL_CONFIG_PATH } from '../config/config.js';
 import type { GlobalConfig } from '../config/config.schema.js';
+import { TrackerClient } from '../client/tracker-client.js';
 
 const OAUTH_URL = 'https://oauth.yandex.ru/authorize?response_type=token&client_id=2e8b250c69cb4dbb8ccf4d9009e7ba9c';
 
@@ -90,15 +91,64 @@ export function registerInitCommand(program: Command): void {
           process.exit(1);
         }
 
-        // Step 3: Default queue
+        // Step 3: Verify token + fetch queues
         console.log('');
-        console.log('Шаг 3. Очередь по умолчанию');
-        console.log('');
-        console.log('  Ключ очереди — это префикс задач (например BACKEND, FRONT, MOBILE).');
-        console.log('  Можно пропустить и указать позже.');
+        console.log('Шаг 3. Проверка подключения...');
         console.log('');
 
-        const defaultQueue = await prompt(rl, 'Очередь', '');
+        const client = new TrackerClient({
+          token,
+          tokenType,
+          orgId,
+          cloudOrgId,
+          apiBaseUrl: 'https://api.tracker.yandex.net/v2',
+        });
+
+        let defaultQueue = '';
+
+        try {
+          const myself = await client.getMyself();
+          console.log(`  ✅ Подключено! Вы: ${myself.display}`);
+          console.log('');
+
+          const queues = await client.getQueues();
+
+          if (queues.length > 0) {
+            console.log('  Доступные очереди:');
+            console.log('');
+            queues.forEach((q, i) => {
+              console.log(`  ${i + 1}. ${q.key} — ${q.name}`);
+            });
+            console.log('');
+
+            const queueChoice = await prompt(rl, 'Выберите очередь (номер или ключ, Enter — пропустить)', '');
+
+            if (queueChoice) {
+              const idx = parseInt(queueChoice, 10) - 1;
+              if (idx >= 0 && idx < queues.length) {
+                defaultQueue = queues[idx].key;
+              } else {
+                const found = queues.find(q => q.key.toLowerCase() === queueChoice.toLowerCase());
+                defaultQueue = found ? found.key : queueChoice.toUpperCase();
+              }
+            }
+          } else {
+            console.log('  Очередей не найдено. Можете указать вручную.');
+            console.log('');
+            defaultQueue = await prompt(rl, 'Очередь по умолчанию (Enter — пропустить)', '');
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.includes('401') || msg.includes('403')) {
+            console.error('  ❌ Не удалось подключиться. Проверьте токен и ID организации.');
+            console.error(`     ${msg}`);
+            process.exit(1);
+          }
+          console.log('  ⚠️  Не удалось получить список очередей.');
+          console.log(`     ${msg}`);
+          console.log('');
+          defaultQueue = await prompt(rl, 'Очередь по умолчанию (Enter — пропустить)', '');
+        }
 
         // Save
         const config: GlobalConfig = {
