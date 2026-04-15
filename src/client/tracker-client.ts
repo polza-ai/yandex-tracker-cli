@@ -193,13 +193,13 @@ export class TrackerClient {
   }
 
   async uploadAttachment(key: string, filePath: string, filename: string): Promise<Attachment> {
-    const { readFileSync } = await import('node:fs');
-    const blob = new Blob([readFileSync(filePath)]);
+    const FormData = (await import('form-data')).default;
     const form = new FormData();
-    form.append('file', blob, filename);
+    form.append('file', createReadStream(filePath), filename);
     const { data } = await this.http.post<Attachment>(
       `/issues/${key}/attachments`,
       form,
+      { headers: { ...form.getHeaders() } },
     );
     return data;
   }
