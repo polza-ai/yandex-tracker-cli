@@ -7,7 +7,7 @@ CLI для [Yandex Tracker](https://tracker.yandex.ru/) — для людей и
 ## Установка
 
 ```bash
-npm install -g yandex-tracker-cli
+npm install -g @polza-ai/yandex-tracker-cli
 ```
 
 Или из исходников:
@@ -138,3 +138,11 @@ tracker time BACKEND-123 log 2h30m
 ## Лицензия
 
 MIT
+
+---
+
+<p align="center">
+  Сделано в <a href="https://polza.ai">polza.ai</a> — платформа №1 для работы с LLM в России.
+  <br>
+  Все модели, один API, без VPN.
+</p>
