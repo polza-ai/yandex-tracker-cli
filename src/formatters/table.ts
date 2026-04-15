@@ -1,6 +1,17 @@
 import Table from 'cli-table3';
 import chalk from 'chalk';
+import dayjs from 'dayjs';
 import type { Issue, Sprint, Comment, Worklog, ChecklistItem, IssueLink } from '../client/types.js';
+
+function fmtDate(iso?: string): string {
+  if (!iso) return '';
+  return dayjs(iso).format('DD.MM.YYYY HH:mm');
+}
+
+function fmtDateShort(iso?: string): string {
+  if (!iso) return '';
+  return dayjs(iso).format('DD.MM.YYYY');
+}
 
 const statusColors: Record<string, (s: string) => string> = {
   open: chalk.white,
@@ -68,7 +79,7 @@ export function formatIssueDetail(issue: Issue): string {
     `  Тип:         ${issue.type.display}`,
     `  Очередь:     ${issue.queue.display}`,
     `  Исполнитель: ${issue.assignee?.display ?? chalk.gray('не назначен')}`,
-    `  Автор:       ${issue.author.display}`,
+    `  Автор:       ${issue.createdBy?.display ?? issue.author?.display ?? chalk.gray('неизвестен')}`,
   ];
 
   if (issue.sprint?.length) {
@@ -87,8 +98,8 @@ export function formatIssueDetail(issue: Issue): string {
     lines.push(`  Чеклист:     ${issue.checklistDone ?? 0}/${issue.checklistTotal}`);
   }
 
-  lines.push(`  Создана:     ${issue.createdAt}`);
-  lines.push(`  Обновлена:   ${issue.updatedAt}`);
+  lines.push(`  Создана:     ${fmtDate(issue.createdAt)}`);
+  lines.push(`  Обновлена:   ${fmtDate(issue.updatedAt)}`);
 
   if (issue.description) {
     lines.push('');
@@ -105,13 +116,14 @@ export function formatIssueDetail(issue: Issue): string {
 
 export function formatSprint(sprint: Sprint): string {
   const statusIcon = sprint.status === 'in_progress' ? chalk.green('●') : chalk.gray('○');
+  const sprintName = sprint.name ?? sprint.display ?? 'Без названия';
   const lines = [
     '',
-    `${statusIcon} ${chalk.bold(sprint.display)}`,
+    `${statusIcon} ${chalk.bold(sprintName)}`,
     `  Статус: ${sprint.status}`,
   ];
-  if (sprint.startDate) lines.push(`  Начало: ${sprint.startDate}`);
-  if (sprint.endDate) lines.push(`  Конец:  ${sprint.endDate}`);
+  if (sprint.startDate) lines.push(`  Начало: ${fmtDateShort(sprint.startDate)}`);
+  if (sprint.endDate) lines.push(`  Конец:  ${fmtDateShort(sprint.endDate)}`);
   lines.push('');
   return lines.join('\n');
 }
@@ -120,7 +132,7 @@ export function formatComments(comments: Comment[]): string {
   if (comments.length === 0) return chalk.gray('Комментариев нет.');
   return comments.map(c => [
     '',
-    `${chalk.bold(c.createdBy.display)} · ${c.createdAt}`,
+    `${chalk.bold(c.createdBy.display)} · ${fmtDate(c.createdAt)}`,
     `  ${c.text}`,
   ].join('\n')).join('\n');
 }
@@ -138,7 +150,7 @@ export function formatWorklogs(worklogs: Worklog[]): string {
     table.push([
       w.createdBy.display,
       w.duration,
-      w.start,
+      fmtDateShort(w.start),
       w.comment ?? '',
     ]);
   }

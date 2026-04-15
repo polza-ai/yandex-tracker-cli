@@ -58,9 +58,9 @@ export class TrackerClient {
 
   async searchIssues(filter: IssueFilter): Promise<Issue[]> {
     if (filter.query) {
-      return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', {
-        query: filter.query,
-      }));
+      const body: Record<string, unknown> = { query: filter.query };
+      if (filter.orderBy) body.order = filter.orderBy;
+      return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', body));
     }
 
     const conditions: string[] = [];
@@ -76,10 +76,11 @@ export class TrackerClient {
     if (filter.sprint) conditions.push(`Sprint: "${filter.sprint}"`);
 
     const query = conditions.length > 0 ? conditions.join(' AND ') : undefined;
+    const body: Record<string, unknown> = {};
+    if (query) body.query = query;
+    if (filter.orderBy) body.order = filter.orderBy;
 
-    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post',
-      query ? { query } : {}
-    ));
+    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', body));
   }
 
   async createIssue(params: CreateIssueParams): Promise<Issue> {

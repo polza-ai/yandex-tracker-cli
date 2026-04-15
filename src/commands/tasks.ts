@@ -39,20 +39,35 @@ export function registerTasksCommand(program: Command): void {
     .option('--sprint <sprint>', 'Спринт')
     .option('--query <tql>', 'Произвольный TQL-запрос')
     .option('--all', 'Включить закрытые задачи')
+    .option('-l, --limit <n>', 'Максимум задач', '50')
+    .option('--sort <field>', 'Сортировка (updated, created, priority)', 'updated')
     .option('--json', 'Вывод в JSON')
     .action(async (opts) => {
       try {
         const config = await loadConfig();
         const client = new TrackerClient(config);
 
-        const issues = await client.searchIssues({
+        const sortMap: Record<string, string> = {
+          updated: 'Updated DESC',
+          created: 'Created DESC',
+          priority: 'Priority ASC',
+        };
+        const orderBy = sortMap[opts.sort] ?? `${opts.sort} DESC`;
+
+        let issues = await client.searchIssues({
           queue: opts.queue ?? config.queue,
           assignee: opts.assignee,
           includeClosed: opts.all,
           status: opts.status,
           sprint: opts.sprint,
           query: opts.query,
+          orderBy,
         });
+
+        const limit = parseInt(opts.limit, 10);
+        if (limit > 0) {
+          issues = issues.slice(0, limit);
+        }
 
         if (opts.json) {
           process.stdout.write(jsonOutput(issues) + '\n');

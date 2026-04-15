@@ -32,8 +32,7 @@ export function registerSprintCommand(program: Command): void {
 
         if (opts.tasks) {
           const issues = await client.searchIssues({
-            queue: config.queue,
-            sprint: sprint.display,
+            query: `Sprint: ${sprint.id}`,
           });
 
           if (opts.json) {

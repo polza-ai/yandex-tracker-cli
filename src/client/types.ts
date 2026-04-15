@@ -29,7 +29,8 @@ export interface Queue {
 export interface Sprint {
   self: string;
   id: number;
-  display: string;
+  name?: string;
+  display?: string;
   board?: BoardRef;
   status: 'draft' | 'in_progress' | 'closed';
   startDate?: string;
@@ -53,7 +54,8 @@ export interface Issue {
   priority: Priority;
   queue: Queue;
   assignee?: UserRef;
-  author: UserRef;
+  author?: UserRef;
+  createdBy?: UserRef;
   sprint?: Sprint[];
   createdAt: string;
   updatedAt: string;
@@ -138,6 +140,7 @@ export interface IssueFilter {
   sprint?: string;
   query?: string;
   includeClosed?: boolean;
+  orderBy?: string;
 }
 
 export interface WorklogParams {
