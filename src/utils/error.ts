@@ -11,14 +11,33 @@ export class TrackerCliError extends Error {
   }
 }
 
+function extractApiMessage(body: Record<string, unknown> | undefined): string {
+  if (!body) return '';
+  const parts: string[] = [];
+
+  const messages = body.errorMessages as string[] | undefined;
+  if (messages?.length) parts.push(...messages);
+
+  const errors = body.errors as Record<string, string> | undefined;
+  if (errors && typeof errors === 'object') {
+    for (const [field, msg] of Object.entries(errors)) {
+      parts.push(`${field}: ${msg}`);
+    }
+  }
+
+  const single = body.message as string | undefined;
+  if (parts.length === 0 && single) parts.push(single);
+
+  return parts.join('; ');
+}
+
 export function handleApiError(error: unknown): never {
   if (error instanceof TrackerCliError) throw error;
 
   if (error instanceof AxiosError) {
     const status = error.response?.status;
     const body = error.response?.data as Record<string, unknown> | undefined;
-    const messages = body?.errorMessages as string[] | undefined;
-    const apiMessage = messages?.[0] ?? (body?.message as string) ?? '';
+    const apiMessage = extractApiMessage(body);
 
     switch (status) {
       case 401:

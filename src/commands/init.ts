@@ -105,9 +105,11 @@ export function registerInitCommand(program: Command): void {
         });
 
         let defaultQueue = '';
+        let userLogin: string | undefined;
 
         try {
           const myself = await client.getMyself();
+          userLogin = myself.login;
           console.log(`  ✅ Подключено! Вы: ${myself.display}`);
           console.log('');
 
@@ -157,6 +159,7 @@ export function registerInitCommand(program: Command): void {
           ...(orgId && { orgId }),
           ...(cloudOrgId && { cloudOrgId }),
           ...(defaultQueue && { defaultQueue }),
+          ...(userLogin && { userLogin }),
           apiBaseUrl: 'https://api.tracker.yandex.net/v2',
         };
 

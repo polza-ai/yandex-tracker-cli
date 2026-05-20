@@ -66,6 +66,7 @@ export async function loadConfig(): Promise<ResolvedConfig> {
       testing: 'testing',
       closed: 'closed',
     },
+    userLogin: global.userLogin,
   };
 }
 

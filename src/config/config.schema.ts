@@ -6,6 +6,7 @@ export const globalConfigSchema = z.object({
   token: z.string().min(1, 'Токен обязателен'),
   tokenType: z.enum(['oauth', 'iam']).default('oauth'),
   defaultQueue: z.string().optional(),
+  userLogin: z.string().optional(),
   apiBaseUrl: z.string().url().default('https://api.tracker.yandex.net/v2'),
 }).refine(
   data => data.orgId || data.cloudOrgId,
@@ -38,4 +39,5 @@ export interface ResolvedConfig {
   boardId?: number;
   branchPrefix: string;
   statusMap: Record<string, string>;
+  userLogin?: string;
 }

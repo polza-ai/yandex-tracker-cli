@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { loadConfig } from '../config/config.js';
 import { TrackerClient } from '../client/tracker-client.js';
 import { handleApiError } from '../utils/error.js';
+import { resolveAssignee } from '../utils/assignee-resolver.js';
 import { jsonOutput } from '../formatters/json.js';
 import { formatIssueDetail } from '../formatters/table.js';
 
@@ -30,13 +31,14 @@ export function registerCreateCommand(program: Command): void {
         }
 
         const client = new TrackerClient(config);
+        const assignee = await resolveAssignee(client, config, opts.assignee);
         const issue = await client.createIssue({
           queue,
           summary: opts.summary,
           description: opts.description,
           type: opts.type,
           priority: opts.priority,
-          assignee: opts.assignee,
+          assignee,
           parent: opts.parent,
           sprint: opts.sprint ? parseInt(opts.sprint, 10) : undefined,
           tags: opts.tag,
