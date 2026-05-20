@@ -24,6 +24,10 @@ export const projectConfigSchema = z.object({
     testing: 'testing',
     closed: 'closed',
   }),
+  orgId: z.string().optional(),
+  cloudOrgId: z.string().optional(),
+  token: z.string().min(1).optional(),
+  tokenType: z.enum(['oauth', 'iam']).optional(),
 }).partial();
 
 export type GlobalConfig = z.infer<typeof globalConfigSchema>;

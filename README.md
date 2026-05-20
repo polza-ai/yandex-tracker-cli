@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="https://polza.ai"><strong>Polza.ai</strong> — №1 LLM Агрегатор в России</a>
+</p>
+
 <h1 align="center">tracker</h1>
 
 <p align="center">
@@ -96,6 +100,9 @@ cp SKILL.md .cursor/rules/tracker-workflow.md
 {
   "queue": "BACKEND",
   "boardId": 42,
+  "orgId": "654321",
+  "token": "y0_AgAAAA...",
+  "tokenType": "oauth",
   "statusMap": {
     "open": "open",
     "inProgress": "inProgress",
@@ -106,7 +113,17 @@ cp SKILL.md .cursor/rules/tracker-workflow.md
 }
 ```
 
+Поля `orgId`, `cloudOrgId`, `token`, `tokenType` переопределяют значения из глобального конфига — это удобно для работы с трекерами нескольких организаций (положите свой `.tracker.json` в корень каждой клиентской папки). `apiBaseUrl` переопределить нельзя.
+
 `statusMap` маппит каноничные имена статусов на реальные ключи вашего workflow.
+
+### Поиск конфига
+
+`tracker` ищет ближайший `.tracker.json` от текущей директории вверх по дереву. Поиск останавливается на `$HOME` (т.е. `~/.tracker.json` намеренно игнорируется); если `cwd` вне домашней директории — поиск идёт до корня ФС. Ближайший файл побеждает. Если проектный конфиг самодостаточен (есть `token` и `orgId`/`cloudOrgId`), глобальный конфиг не требуется.
+
+> ⚠️ При хранении `token` в `.tracker.json` обязательно добавьте файл в `.gitignore`. `tracker init --project` предложит сделать это автоматически.
+
+> При переопределении токена `userLogin` всё ещё берётся из глобального конфига, поэтому `--assignee me` может разрешиться в неверного пользователя. При работе с другим токеном передавайте логин явно (`--assignee имя`).
 
 Поддерживаются организации **Яндекс 360** (OAuth) и **Yandex Cloud** (IAM-токен, флаг `--iam` при `init`).
 

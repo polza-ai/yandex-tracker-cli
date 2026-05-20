@@ -1,8 +1,12 @@
 import { Command } from 'commander';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { saveGlobalConfig, saveProjectConfig, GLOBAL_CONFIG_PATH } from '../config/config.js';
-import type { GlobalConfig } from '../config/config.schema.js';
+import { readFile, writeFile, appendFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { homedir } from 'node:os';
+import { saveGlobalConfig, saveProjectConfig, GLOBAL_CONFIG_PATH, PROJECT_CONFIG_NAME } from '../config/config.js';
+import type { GlobalConfig, ProjectConfig } from '../config/config.schema.js';
 import { TrackerClient } from '../client/tracker-client.js';
 
 const OAUTH_URL = 'https://oauth.yandex.ru/authorize?response_type=token&client_id=2e8b250c69cb4dbb8ccf4d9009e7ba9c';
@@ -11,6 +15,39 @@ async function prompt(rl: ReturnType<typeof createInterface>, question: string, 
   const suffix = defaultValue ? ` [${defaultValue}]` : '';
   const answer = await rl.question(`${question}${suffix}: `);
   return answer.trim() || defaultValue || '';
+}
+
+async function confirm(rl: ReturnType<typeof createInterface>, question: string, defaultYes: boolean): Promise<boolean> {
+  const suffix = defaultYes ? '[Y/n]' : '[y/N]';
+  const answer = (await rl.question(`${question} ${suffix}: `)).trim().toLowerCase();
+  if (!answer) return defaultYes;
+  return answer === 'y' || answer === 'yes' || answer === 'д' || answer === 'да';
+}
+
+function isInGitRepo(startDir: string): boolean {
+  const home = homedir();
+  let dir = startDir;
+  while (true) {
+    if (existsSync(join(dir, '.git'))) return true;
+    if (dir === home) return false;
+    const parent = dirname(dir);
+    if (parent === dir) return false;
+    dir = parent;
+  }
+}
+
+async function ensureGitignore(dir: string): Promise<'added' | 'already' | 'no-git'> {
+  if (!isInGitRepo(dir)) return 'no-git';
+  const gitignorePath = join(dir, '.gitignore');
+  if (existsSync(gitignorePath)) {
+    const content = await readFile(gitignorePath, 'utf-8');
+    if (content.includes('.tracker.json')) return 'already';
+    const needsNewline = content.length > 0 && !content.endsWith('\n');
+    await appendFile(gitignorePath, `${needsNewline ? '\n' : ''}.tracker.json\n`, 'utf-8');
+    return 'added';
+  }
+  await writeFile(gitignorePath, '.tracker.json\n', 'utf-8');
+  return 'added';
 }
 
 export function registerInitCommand(program: Command): void {
@@ -177,11 +214,97 @@ export function registerInitCommand(program: Command): void {
           const boardIdStr = await prompt(rl, 'ID доски для спринтов (Enter — пропустить)', '');
           const boardId = boardIdStr ? parseInt(boardIdStr, 10) : undefined;
 
-          await saveProjectConfig({
+          let projectOrgId: string | undefined;
+          let projectCloudOrgId: string | undefined;
+          let projectToken: string | undefined;
+          let projectTokenType: 'oauth' | 'iam' | undefined;
+
+          console.log('');
+          const overrideOrg = await confirm(rl, 'Использовать другую организацию для этого проекта?', false);
+
+          if (overrideOrg) {
+            console.log('');
+            console.log('  1 — Яндекс 360');
+            console.log('  2 — Yandex Cloud');
+            console.log('');
+            const orgChoice = await prompt(rl, 'Выберите (1 или 2)', '1');
+            const isProjectCloud = orgChoice === '2';
+
+            if (isProjectCloud) {
+              projectCloudOrgId = await prompt(rl, 'Cloud Organization ID');
+            } else {
+              projectOrgId = await prompt(rl, 'ID организации');
+            }
+
+            if (!projectOrgId && !projectCloudOrgId) {
+              console.error('\n❌ ID организации обязателен при переопределении.\n');
+              process.exit(1);
+            }
+
+            const overrideToken = await confirm(rl, 'Использовать другой токен для этого проекта?', false);
+
+            if (overrideToken) {
+              console.log('');
+              console.log('  1 — OAuth-токен');
+              console.log('  2 — IAM-токен (Yandex Cloud)');
+              console.log('');
+              const tokenChoice = await prompt(rl, 'Тип токена (1 или 2)', '1');
+              projectTokenType = tokenChoice === '2' ? 'iam' : 'oauth';
+
+              console.log('');
+              console.log('  ⚠️  Токен будет сохранён в .tracker.json в этом каталоге.');
+              console.log('     Не коммитьте этот файл — добавьте .tracker.json в .gitignore.');
+              console.log('');
+
+              projectToken = await prompt(rl, 'Вставьте токен');
+              if (!projectToken) {
+                console.error('\n❌ Токен обязателен при переопределении.\n');
+                process.exit(1);
+              }
+
+              try {
+                const projectClient = new TrackerClient({
+                  token: projectToken,
+                  tokenType: projectTokenType,
+                  orgId: projectOrgId,
+                  cloudOrgId: projectCloudOrgId,
+                  apiBaseUrl: 'https://api.tracker.yandex.net/v2',
+                });
+                const projectMyself = await projectClient.getMyself();
+                console.log(`  ✅ Проектные креды работают. Пользователь: ${projectMyself.display}`);
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.log(`  ⚠️  Не удалось проверить проектные креды: ${msg}`);
+              }
+            }
+          }
+
+          const projectConfig: ProjectConfig = {
             ...(queue && { queue }),
             ...(boardId && { boardId }),
-          });
-          console.log('✅ Конфиг проекта сохранён в .tracker.json');
+            ...(projectOrgId && { orgId: projectOrgId }),
+            ...(projectCloudOrgId && { cloudOrgId: projectCloudOrgId }),
+            ...(projectToken && { token: projectToken }),
+            ...(projectTokenType && { tokenType: projectTokenType }),
+          };
+
+          await saveProjectConfig(projectConfig);
+
+          const projectPath = join(process.cwd(), PROJECT_CONFIG_NAME);
+          console.log('');
+          console.log(`✅ Конфиг проекта сохранён в ${projectPath}`);
+
+          if (projectToken) {
+            const wantsGitignore = await confirm(rl, 'Добавить .tracker.json в .gitignore?', true);
+            if (wantsGitignore) {
+              const status = await ensureGitignore(process.cwd());
+              if (status === 'added') console.log('✅ .tracker.json добавлен в .gitignore');
+              else if (status === 'already') console.log('ℹ️  .tracker.json уже в .gitignore');
+              else console.log('⚠️  .git/ не найден — пропускаю .gitignore');
+            }
+            console.log('');
+            console.log('⚠️  Файл содержит токен. Убедитесь, что он не попадёт в git.');
+          }
         }
 
         console.log('');
