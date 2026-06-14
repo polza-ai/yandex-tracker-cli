@@ -2,15 +2,19 @@ import { Command } from 'commander';
 import { loadConfig } from '../config/config.js';
 import { TrackerClient } from '../client/tracker-client.js';
 import { handleApiError } from '../utils/error.js';
+import { selectPlanningSprint, listSprints } from '../utils/sprint-select.js';
 import { jsonOutput } from '../formatters/json.js';
-import { formatSprint, formatIssueList } from '../formatters/table.js';
+import { formatSprint, formatSprintList, formatIssueList } from '../formatters/table.js';
 
 export function registerSprintCommand(program: Command): void {
   program
     .command('sprint')
-    .description('Текущий спринт')
+    .description('Спринт доски: текущий (in_progress), список (--list) или целевой для планирования (--planning)')
     .option('-b, --board <id>', 'ID доски')
     .option('--tasks', 'Показать задачи спринта')
+    .option('--list', 'Список спринтов доски')
+    .option('--all', 'С --list: включить архивные')
+    .option('--planning', 'Целевой спринт планирования (ближайший draft, иначе активный)')
     .option('--json', 'Вывод в JSON')
     .action(async (opts) => {
       try {
@@ -23,6 +27,37 @@ export function registerSprintCommand(program: Command): void {
         }
 
         const client = new TrackerClient(config);
+
+        // --list: все спринты доски
+        if (opts.list) {
+          const sprints = listSprints(await client.getSprints(boardId), Boolean(opts.all));
+          if (opts.json) {
+            process.stdout.write(jsonOutput(sprints) + '\n');
+          } else {
+            console.log(formatSprintList(sprints));
+          }
+          return;
+        }
+
+        // --planning: целевой спринт для постановки задач (draft-приоритет)
+        if (opts.planning) {
+          const sprint = selectPlanningSprint(await client.getSprints(boardId));
+          if (!sprint) {
+            if (opts.json) {
+              process.stdout.write(jsonOutput(null) + '\n');
+            } else {
+              console.log('Планируемый спринт не найден (нет ни draft, ни активного).');
+            }
+            return;
+          }
+          if (opts.json) {
+            process.stdout.write(jsonOutput(sprint) + '\n');
+          } else {
+            console.log(formatSprint(sprint));
+          }
+          return;
+        }
+
         const sprint = await client.getCurrentSprint(boardId);
 
         if (!sprint) {

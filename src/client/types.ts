@@ -32,7 +32,8 @@ export interface Sprint {
   name?: string;
   display?: string;
   board?: BoardRef;
-  status: 'draft' | 'in_progress' | 'closed';
+  status: 'draft' | 'in_progress' | 'closed' | 'archived';
+  archived?: boolean;
   startDate?: string;
   endDate?: string;
 }

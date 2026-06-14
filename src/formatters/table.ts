@@ -141,6 +141,20 @@ export function formatSprint(sprint: Sprint): string {
   return lines.join('\n');
 }
 
+export function formatSprintList(sprints: Sprint[]): string {
+  if (!sprints.length) return 'Спринтов не найдено.';
+  return sprints.map((s) => {
+    const icon = s.status === 'in_progress' ? chalk.green('●')
+      : s.status === 'draft' ? chalk.yellow('◐')
+      : chalk.gray('○');
+    const name = s.name ?? s.display ?? 'Без названия';
+    const dates = (s.startDate || s.endDate)
+      ? `  ${fmtDateShort(s.startDate)}–${fmtDateShort(s.endDate)}`
+      : '';
+    return `${icon} id=${chalk.bold(String(s.id))}  ${name}  [${s.status}]${dates}`;
+  }).join('\n');
+}
+
 export function formatComments(comments: Comment[]): string {
   if (comments.length === 0) return chalk.gray('Комментариев нет.');
   return comments.map(c => [
