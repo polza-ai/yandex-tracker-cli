@@ -142,6 +142,9 @@ export interface CreateIssueParams {
   sprint?: number;
   parent?: string;
   tags?: string[];
+  storyPoints?: number;
+  /** Произвольные дополнительные поля (из --field). Применяются до типизированных. */
+  fields?: Record<string, unknown>;
 }
 
 export interface IssueFilter {

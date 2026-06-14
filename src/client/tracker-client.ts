@@ -85,20 +85,24 @@ export class TrackerClient {
     ));
   }
 
-  async createIssue(params: CreateIssueParams): Promise<Issue> {
-    const body: Record<string, unknown> = {
-      queue: params.queue,
-      summary: params.summary,
-    };
-    if (params.description) body.description = params.description;
+  /** Собирает тело запроса создания задачи (используется и для --dry-run). */
+  buildCreateIssueBody(params: CreateIssueParams): Record<string, unknown> {
+    const body: Record<string, unknown> = { ...(params.fields ?? {}) };
+    body.queue = params.queue;
+    body.summary = params.summary;
+    if (params.description !== undefined) body.description = params.description;
     if (params.type) body.type = params.type;
     if (params.priority) body.priority = params.priority;
     if (params.assignee) body.assignee = params.assignee;
     if (params.sprint) body.sprint = [{ id: params.sprint }];
     if (params.parent) body.parent = params.parent;
     if (params.tags) body.tags = params.tags;
+    if (params.storyPoints !== undefined) body.storyPoints = params.storyPoints;
+    return body;
+  }
 
-    const { data } = await this.http.post<Issue>('/issues', body);
+  async createIssue(params: CreateIssueParams): Promise<Issue> {
+    const { data } = await this.http.post<Issue>('/issues', this.buildCreateIssueBody(params));
     return data;
   }
 

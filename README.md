@@ -177,13 +177,24 @@ tracker create -s "Название" [опции]
 |------|----------|
 | `-s, --summary <text>` | Название задачи **(обязательно)** |
 | `-d, --description <text>` | Описание |
+| `-F, --description-file <path>` | Описание из файла (взаимоисключимо с `-d`) |
 | `-q, --queue <queue>` | Очередь |
 | `-t, --type <type>` | Тип: `task`, `bug`, `story`... (по умолчанию: `task`) |
 | `-p, --priority <priority>` | `blocker`, `critical`, `major`, `normal`, `minor` |
 | `-a, --assignee <login>` | Исполнитель |
 | `--parent <key>` | Родительская задача (для подзадач) |
+| `--sprint <id>` | Спринт |
 | `--tag <tags...>` | Теги |
+| `--story-points <points>` | Story Points (поле `storyPoints`) |
+| `--field <pairs...>` | Доп. поле: `key=value` (строка) или `key:=json` (число/bool/объект); повторяемо |
+| `--dry-run` | Показать тело запроса без создания |
 | `--json` | JSON-вывод |
+
+`--field` — escape-hatch для любого поля API без отдельного флага:
+
+```
+tracker create -s "Релиз" --field deadline=2026-07-01 --field 'sp:=8' --dry-run
+```
 
 ### status
 
@@ -260,9 +271,15 @@ tracker update <key> [опции]
 |------|----------|
 | `-s, --summary <text>` | Новое название |
 | `-d, --description <text>` | Новое описание |
+| `-F, --description-file <path>` | Новое описание из файла (взаимоисключимо с `-d`) |
+| `-t, --type <type>` | Новый тип задачи |
 | `-a, --assignee <login>` | Новый исполнитель |
 | `-p, --priority <priority>` | Новый приоритет |
+| `--sprint <id>` | Назначить спринт |
 | `--tag <tags...>` | Теги |
+| `--story-points <points>` | Story Points (поле `storyPoints`) |
+| `--field <pairs...>` | Доп. поле: `key=value` или `key:=json`; повторяемо |
+| `--dry-run` | Показать тело запроса без обновления |
 | `--json` | JSON-вывод |
 
 ### transitions
