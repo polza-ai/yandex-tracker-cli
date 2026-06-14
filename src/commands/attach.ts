@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { createReadStream, createWriteStream } from 'node:fs';
+import { createWriteStream } from 'node:fs';
 import { basename } from 'node:path';
 import { loadConfig } from '../config/config.js';
 import { TrackerClient } from '../client/tracker-client.js';

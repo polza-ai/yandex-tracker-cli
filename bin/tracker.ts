@@ -61,7 +61,7 @@ program.parseAsync = async (argv?: string[]) => {
     if (isJson) {
       process.stdout.write(formatError(error, true) + '\n');
     }
-    process.exit(error instanceof Error && 'exitCode' in error ? (error as any).exitCode : 1);
+    process.exit(error instanceof Error && 'exitCode' in error ? (error as { exitCode?: number }).exitCode : 1);
   }
 };
 
