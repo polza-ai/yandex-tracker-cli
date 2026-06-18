@@ -58,31 +58,53 @@ export class TrackerClient {
     return data;
   }
 
-  async searchIssues(filter: IssueFilter): Promise<Issue[]> {
+  /** Собирает тело запроса для _search/_count из фильтра. includeSort=false для _count. */
+  buildSearchBody(filter: IssueFilter, includeSort = true): Record<string, unknown> {
+    let query: string;
     if (filter.query) {
-      let query = filter.query;
-      if (filter.orderBy) query += ` "Sort by": ${filter.orderBy}`;
-      return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', { query }));
+      query = filter.query;
+    } else {
+      const conditions: string[] = [];
+      if (filter.queue) conditions.push(`Queue: "${filter.queue}"`);
+      if (filter.assignee) {
+        conditions.push(filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`);
+      }
+      if (filter.status) {
+        conditions.push(`Status: "${filter.status}"`);
+      } else if (!filter.includeClosed) {
+        conditions.push('Resolution: empty()');
+      }
+      if (filter.sprint) conditions.push(`Sprint: "${filter.sprint}"`);
+      query = conditions.join(' AND ');
     }
 
-    const conditions: string[] = [];
-    if (filter.queue) conditions.push(`Queue: "${filter.queue}"`);
-    if (filter.assignee) {
-      conditions.push(filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`);
-    }
-    if (filter.status) {
-      conditions.push(`Status: "${filter.status}"`);
-    } else if (!filter.includeClosed) {
-      conditions.push('Resolution: empty()');
-    }
-    if (filter.sprint) conditions.push(`Sprint: "${filter.sprint}"`);
+    if (includeSort && filter.orderBy) query += ` "Sort by": ${filter.orderBy}`;
+    return query ? { query } : {};
+  }
 
-    let query = conditions.length > 0 ? conditions.join(' AND ') : '';
-    if (filter.orderBy) query += ` "Sort by": ${filter.orderBy}`;
+  async searchIssues(filter: IssueFilter): Promise<Issue[]> {
+    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)));
+  }
 
-    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post',
-      query ? { query } : {}
-    ));
+  /** Точный подсчёт задач через _count, без выгрузки тел. Игнорирует сортировку. */
+  async countIssues(filter: IssueFilter): Promise<number> {
+    const { data } = await this.http.post('/issues/_count', this.buildSearchBody(filter, false));
+    return typeof data === 'number' ? data : Number(data);
+  }
+
+  /** Выгрузка всех страниц с safety-cap. perPage=100 — потолок страницы Tracker. */
+  async searchAllIssues(filter: IssueFilter, maxResults: number): Promise<{ issues: Issue[]; capped: boolean }> {
+    const body = this.buildSearchBody(filter);
+    const issues: Issue[] = [];
+    let capped = false;
+    for await (const page of paginate<Issue>(this.http, '/issues/_search', { perPage: 100 }, 'post', body)) {
+      issues.push(...page);
+      if (issues.length >= maxResults) {
+        capped = true;
+        break;
+      }
+    }
+    return { issues: issues.slice(0, maxResults), capped };
   }
 
   /** Собирает тело запроса создания задачи (используется и для --dry-run). */

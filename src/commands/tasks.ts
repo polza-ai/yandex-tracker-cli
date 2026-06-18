@@ -39,7 +39,9 @@ export function registerTasksCommand(program: Command): void {
     .option('--sprint <sprint>', 'Спринт')
     .option('--query <tql>', 'Произвольный TQL-запрос')
     .option('--all', 'Включить закрытые задачи')
-    .option('-l, --limit <n>', 'Максимум задач', '50')
+    .option('--count', 'Вернуть только количество задач')
+    .option('--fetch-all', 'Выгрузить все задачи (обход потолка пагинации)')
+    .option('-l, --limit <n>', 'Максимум задач (по умолчанию 50; верхний предел для --fetch-all)')
     .option('--sort <field>', 'Сортировка (updated, created, priority)', 'updated')
     .option('--json', 'Вывод в JSON')
     .action(async (opts) => {
@@ -54,7 +56,7 @@ export function registerTasksCommand(program: Command): void {
         };
         const orderBy = sortMap[opts.sort] ?? `${opts.sort} DESC`;
 
-        let issues = await client.searchIssues({
+        const filter = {
           queue: opts.queue ?? config.queue,
           assignee: opts.assignee,
           includeClosed: opts.all,
@@ -62,9 +64,37 @@ export function registerTasksCommand(program: Command): void {
           sprint: opts.sprint,
           query: opts.query,
           orderBy,
-        });
+        };
 
-        const limit = parseInt(opts.limit, 10);
+        if (opts.count) {
+          const count = await client.countIssues(filter);
+          if (opts.json) {
+            process.stdout.write(jsonOutput({ count }) + '\n');
+          } else {
+            console.log(String(count));
+          }
+          return;
+        }
+
+        if (opts.fetchAll) {
+          const SAFETY_CAP = 10000;
+          const userLimit = opts.limit ? parseInt(opts.limit, 10) : undefined;
+          const maxResults = Math.min(userLimit && userLimit > 0 ? userLimit : SAFETY_CAP, SAFETY_CAP);
+          const { issues, capped } = await client.searchAllIssues(filter, maxResults);
+          if (capped && maxResults === SAFETY_CAP) {
+            process.stderr.write(`⚠ Достигнут предел ${SAFETY_CAP} задач, результат обрезан. Уточните запрос.\n`);
+          }
+          if (opts.json) {
+            process.stdout.write(jsonOutput(issues) + '\n');
+          } else {
+            console.log(formatIssueList(issues));
+          }
+          return;
+        }
+
+        let issues = await client.searchIssues(filter);
+
+        const limit = opts.limit ? parseInt(opts.limit, 10) : 50;
         if (limit > 0) {
           issues = issues.slice(0, limit);
         }
