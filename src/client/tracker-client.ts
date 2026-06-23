@@ -140,9 +140,19 @@ export class TrackerClient {
     return data;
   }
 
-  async executeTransition(key: string, transitionId: string, comment?: string): Promise<void> {
-    const body = comment ? { comment } : undefined;
-    await this.http.post(`/issues/${key}/transitions/${transitionId}/_execute`, body);
+  async executeTransition(key: string, transitionId: string, comment?: string, resolution?: string): Promise<void> {
+    const body: Record<string, unknown> = {};
+    if (comment) body.comment = comment;
+    if (resolution) body.resolution = resolution;
+    await this.http.post(
+      `/issues/${key}/transitions/${transitionId}/_execute`,
+      Object.keys(body).length > 0 ? body : undefined,
+    );
+  }
+
+  async getResolutions(): Promise<Array<{ key: string; name: string }>> {
+    const { data } = await this.http.get<Array<{ key: string; name: string }>>('/resolutions');
+    return data;
   }
 
   // Comments

@@ -199,10 +199,12 @@ tracker create -s "Релиз" --field deadline=2026-07-01 --field 'sp:=8' --dry
 ### status
 
 ```
-tracker status <key> <status> [-c "комментарий"] [--json]
+tracker status <key> <status> [-c "комментарий"] [-r <резолюция>] [--json]
 ```
 
 Статусы: `open`, `inProgress`, `review`, `testing`, `closed` (маппятся через `statusMap` в конфиге).
+
+`-r, --resolution <key>` — резолюция при закрытии (напр. `fixed`, `successful`, `wontFix`). Если воркфлоу требует резолюцию, а она не указана, CLI выведет список доступных. Пример: `tracker status PROJ-123 closed -r successful -c "Выкачено в прод"`.
 
 ### comment
 
