@@ -26,6 +26,7 @@ npm: `@polza-ai/yandex-tracker-cli`, GitHub: `polza-ai/yandex-tracker-cli`
 - Каждая команда — отдельный файл в `src/commands/`
 - Ошибки через `TrackerCliError(message, code, exitCode)`
 - Yandex Tracker API: поля `createdBy` (не `author`), спринт `name` (не `display`)
+- Связи: `relationship` описывает роль задачи из URL — `link A B -t parent` делает A родителем B; в выводе `link X` метка («Подзадача»/«Родительская задача») — роль самого X
 
 ## Структура
 ```

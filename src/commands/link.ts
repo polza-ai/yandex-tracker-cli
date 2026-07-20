@@ -17,12 +17,41 @@ const linkTypeMap: Record<string, string> = {
   subtask: 'is subtask for',
 };
 
+// Фраза читается слева направо: роль key относительно target.
+const linkPhrases: Record<string, string> = {
+  relates: 'связана с',
+  blocks: 'блокирует',
+  depends: 'зависит от',
+  duplicates: 'дублирует',
+  parent: '— родительская задача для',
+  subtask: '— подзадача',
+};
+
+export function describeLink(key: string, target: string, type: string): string {
+  const phrase = linkPhrases[type];
+  return phrase ? `${key} ${phrase} ${target}` : `${key} → ${target} (${type})`;
+}
+
 export function registerLinkCommand(program: Command): void {
   program
     .command('link <key> [target]')
     .description('Связать задачи или показать связи')
     .option('-t, --type <type>', 'Тип связи (relates, blocks, depends, duplicates, parent, subtask)', 'relates')
     .option('--json', 'Вывод в JSON')
+    .addHelpText('after', `
+Семантика (порядок аргументов важен, тип описывает роль <key>):
+  tracker link A B -t parent    A становится РОДИТЕЛЕМ B
+  tracker link A B -t subtask   A становится ПОДЗАДАЧЕЙ B
+  tracker link A B -t blocks    A блокирует B
+  tracker link A B -t depends   A зависит от B
+
+Прикрепить подзадачу: tracker link <родитель> <ребёнок> -t parent
+У задачи один родитель — повторная привязка перезаписывает его.
+
+Чтение вывода tracker link X (метка — роль самого X):
+  «Подзадача: Y»           = X — подзадача Y
+  «Родительская задача: Y» = X — родитель Y
+`)
     .action(async (key: string, target: string | undefined, opts) => {
       try {
         const config = await loadConfig();
@@ -46,7 +75,7 @@ export function registerLinkCommand(program: Command): void {
         if (opts.json) {
           process.stdout.write(jsonOutput(link) + '\n');
         } else {
-          console.log(`${chalk.green('✓')} ${resolvedKey} → ${resolvedTarget} (${opts.type})`);
+          console.log(`${chalk.green('✓')} ${describeLink(resolvedKey, resolvedTarget, opts.type)}`);
         }
       } catch (error) {
         handleApiError(error);

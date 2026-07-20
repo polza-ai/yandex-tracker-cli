@@ -16,10 +16,24 @@ tracker comment <KEY> --list [--json]
 tracker time <KEY> start|stop|log <duration>|show [--json]
 tracker sprint [--board ID] [--tasks] [--json]
 tracker checklist <KEY> [add "текст"|check <номер>] [--json]
-tracker link <KEY> [TARGET] [--type relates|blocks|depends] [--json]
+tracker link <KEY> [TARGET] [--type relates|blocks|depends|duplicates|parent|subtask] [--json]
 ```
 
 Всегда используй `--json` при парсинге вывода программно.
+
+## Связи между задачами (link)
+
+Порядок аргументов задаёт направление — тип описывает роль **KEY**:
+
+- `tracker link A B -t parent` — A становится **родителем** B. Прикрепить подзадачу: `tracker link <родитель> <ребёнок> -t parent`.
+- `tracker link A B -t subtask` — A становится **подзадачей** B (то же, что выше, наоборот).
+- `tracker link A B -t blocks` — A блокирует B; `-t depends` — A зависит от B.
+- У задачи ровно один родитель: повторный `-t parent` к тому же ребёнку **перезаписывает** родителя.
+
+В выводе `tracker link X` метка описывает роль **самого X** (не связанной задачи — это противоположно веб-интерфейсу Tracker):
+
+- «Подзадача: Y» = X — подзадача Y (Y — родитель).
+- «Родительская задача: Y» = X — родитель Y.
 
 ## Рабочий цикл: от задачи до MR
 
