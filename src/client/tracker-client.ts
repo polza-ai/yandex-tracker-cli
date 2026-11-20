@@ -30,8 +30,7 @@ export class TrackerClient {
   private http: AxiosInstance;
 
   constructor(config: TrackerClientConfig) {
-    const authHeader =
-      config.tokenType === 'iam' ? `Bearer ${config.token}` : `OAuth ${config.token}`;
+    const authHeader = config.tokenType === 'iam' ? `Bearer ${config.token}` : `OAuth ${config.token}`;
 
     const headers: Record<string, string> = {
       Authorization: authHeader,
@@ -76,9 +75,7 @@ export class TrackerClient {
       const conditions: string[] = [];
       if (filter.queue) conditions.push(`Queue: "${filter.queue}"`);
       if (filter.assignee) {
-        conditions.push(
-          filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`,
-        );
+        conditions.push(filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`);
       }
       if (filter.status) {
         conditions.push(`Status: "${filter.status}"`);
@@ -94,9 +91,7 @@ export class TrackerClient {
   }
 
   async searchIssues(filter: IssueFilter): Promise<Issue[]> {
-    return collectAll(
-      paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)),
-    );
+    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)));
   }
 
   /** Точный подсчёт задач через _count, без выгрузки тел. Игнорирует сортировку. */
@@ -106,20 +101,11 @@ export class TrackerClient {
   }
 
   /** Выгрузка всех страниц с safety-cap. perPage=100 — потолок страницы Tracker. */
-  async searchAllIssues(
-    filter: IssueFilter,
-    maxResults: number,
-  ): Promise<{ issues: Issue[]; capped: boolean }> {
+  async searchAllIssues(filter: IssueFilter, maxResults: number): Promise<{ issues: Issue[]; capped: boolean }> {
     const body = this.buildSearchBody(filter);
     const issues: Issue[] = [];
     let capped = false;
-    for await (const page of paginate<Issue>(
-      this.http,
-      '/issues/_search',
-      { perPage: 100 },
-      'post',
-      body,
-    )) {
+    for await (const page of paginate<Issue>(this.http, '/issues/_search', { perPage: 100 }, 'post', body)) {
       issues.push(...page);
       if (issues.length >= maxResults) {
         capped = true;
@@ -162,19 +148,11 @@ export class TrackerClient {
     return data;
   }
 
-  async executeTransition(
-    key: string,
-    transitionId: string,
-    comment?: string,
-    resolution?: string,
-  ): Promise<void> {
+  async executeTransition(key: string, transitionId: string, comment?: string, resolution?: string): Promise<void> {
     const body: Record<string, unknown> = {};
     if (comment) body.comment = comment;
     if (resolution) body.resolution = resolution;
-    await this.http.post(
-      `/issues/${key}/transitions/${transitionId}/_execute`,
-      Object.keys(body).length > 0 ? body : undefined,
-    );
+    await this.http.post(`/issues/${key}/transitions/${transitionId}/_execute`, Object.keys(body).length > 0 ? body : undefined);
   }
 
   async getResolutions(): Promise<Array<{ key: string; name: string }>> {
@@ -193,10 +171,7 @@ export class TrackerClient {
     return data;
   }
 
-  async uploadTempAttachment(
-    filePath: string,
-    filename: string,
-  ): Promise<{ id: string; name: string; [k: string]: unknown }> {
+  async uploadTempAttachment(filePath: string, filename: string): Promise<{ id: string; name: string; [k: string]: unknown }> {
     const FormData = (await import('form-data')).default;
     const form = new FormData();
     form.append('file', createReadStream(filePath), filename);
@@ -282,16 +257,11 @@ export class TrackerClient {
     const FormData = (await import('form-data')).default;
     const form = new FormData();
     form.append('file', createReadStream(filePath), filename);
-    const { data } = await this.http.post<Attachment>(`/issues/${key}/attachments`, form, {
-      headers: { ...form.getHeaders() },
-    });
+    const { data } = await this.http.post<Attachment>(`/issues/${key}/attachments`, form, { headers: { ...form.getHeaders() } });
     return data;
   }
 
-  async downloadAttachment(
-    key: string,
-    attachmentId: string,
-  ): Promise<{ name: string; stream: Readable }> {
+  async downloadAttachment(key: string, attachmentId: string): Promise<{ name: string; stream: Readable }> {
     const attachments = await this.getAttachments(key);
     const att = attachments.find((a) => a.id === attachmentId);
     const name = att?.name ?? 'attachment';
