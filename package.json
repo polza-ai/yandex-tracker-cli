@@ -22,13 +22,14 @@
   "scripts": {
     "build": "rolldown -c && tsc --emitDeclarationOnly",
     "dev": "node dist/bin/tracker.js",
-    "test": "vitest run",
+    "test": "vitest run && npm run test:cli",
     "test:watch": "vitest",
     "lint": "oxlint src bin",
     "typecheck": "tsc --noEmit",
     "predev": "rolldown -c",
     "format": "oxfmt --write src bin",
-    "format:check": "oxfmt --check src bin"
+    "format:check": "oxfmt --check src bin",
+    "test:cli": "npm run build && node --test tests/cli.compat.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
