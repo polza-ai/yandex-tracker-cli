@@ -9,7 +9,7 @@ export async function* paginate<T>(
   url: string,
   options: PaginatedOptions = {},
   method: 'get' | 'post' = 'get',
-  body?: unknown
+  body?: unknown,
 ): AsyncGenerator<T[], void, undefined> {
   const perPage = options.perPage ?? 50;
   let page = 1;
@@ -17,9 +17,10 @@ export async function* paginate<T>(
 
   do {
     const params = { perPage, page };
-    const response = method === 'post'
-      ? await client.post(url, body, { params })
-      : await client.get(url, { params });
+    const response =
+      method === 'post'
+        ? await client.post(url, body, { params })
+        : await client.get(url, { params });
 
     const items: T[] = Array.isArray(response.data) ? response.data : [];
 
@@ -38,9 +39,7 @@ export async function* paginate<T>(
   } while (page <= totalPages);
 }
 
-export async function collectAll<T>(
-  generator: AsyncGenerator<T[], void, undefined>
-): Promise<T[]> {
+export async function collectAll<T>(generator: AsyncGenerator<T[], void, undefined>): Promise<T[]> {
   const results: T[] = [];
   for await (const page of generator) {
     results.push(...page);

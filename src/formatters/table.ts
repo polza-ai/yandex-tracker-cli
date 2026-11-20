@@ -96,7 +96,7 @@ export function formatIssueDetail(issue: Issue): string {
   ];
 
   if (issue.sprint?.length) {
-    lines.push(`  Спринт:      ${issue.sprint.map(s => s.display).join(', ')}`);
+    lines.push(`  Спринт:      ${issue.sprint.map((s) => s.display).join(', ')}`);
   }
   if (issue.deadline) {
     lines.push(`  Дедлайн:     ${issue.deadline}`);
@@ -117,9 +117,8 @@ export function formatIssueDetail(issue: Issue): string {
   if (issue.description) {
     lines.push('');
     lines.push(chalk.bold('  Описание:'));
-    const desc = issue.description.length > 500
-      ? issue.description.slice(0, 500) + '...'
-      : issue.description;
+    const desc =
+      issue.description.length > 500 ? issue.description.slice(0, 500) + '...' : issue.description;
     lines.push('  ' + desc.split('\n').join('\n  '));
   }
 
@@ -130,11 +129,7 @@ export function formatIssueDetail(issue: Issue): string {
 export function formatSprint(sprint: Sprint): string {
   const statusIcon = sprint.status === 'in_progress' ? chalk.green('●') : chalk.gray('○');
   const sprintName = sprint.name ?? sprint.display ?? 'Без названия';
-  const lines = [
-    '',
-    `${statusIcon} ${chalk.bold(sprintName)}`,
-    `  Статус: ${sprint.status}`,
-  ];
+  const lines = ['', `${statusIcon} ${chalk.bold(sprintName)}`, `  Статус: ${sprint.status}`];
   if (sprint.startDate) lines.push(`  Начало: ${fmtDateShort(sprint.startDate)}`);
   if (sprint.endDate) lines.push(`  Конец:  ${fmtDateShort(sprint.endDate)}`);
   lines.push('');
@@ -143,25 +138,31 @@ export function formatSprint(sprint: Sprint): string {
 
 export function formatSprintList(sprints: Sprint[]): string {
   if (!sprints.length) return 'Спринтов не найдено.';
-  return sprints.map((s) => {
-    const icon = s.status === 'in_progress' ? chalk.green('●')
-      : s.status === 'draft' ? chalk.yellow('◐')
-      : chalk.gray('○');
-    const name = s.name ?? s.display ?? 'Без названия';
-    const dates = (s.startDate || s.endDate)
-      ? `  ${fmtDateShort(s.startDate)}–${fmtDateShort(s.endDate)}`
-      : '';
-    return `${icon} id=${chalk.bold(String(s.id))}  ${name}  [${s.status}]${dates}`;
-  }).join('\n');
+  return sprints
+    .map((s) => {
+      const icon =
+        s.status === 'in_progress'
+          ? chalk.green('●')
+          : s.status === 'draft'
+            ? chalk.yellow('◐')
+            : chalk.gray('○');
+      const name = s.name ?? s.display ?? 'Без названия';
+      const dates =
+        s.startDate || s.endDate ? `  ${fmtDateShort(s.startDate)}–${fmtDateShort(s.endDate)}` : '';
+      return `${icon} id=${chalk.bold(String(s.id))}  ${name}  [${s.status}]${dates}`;
+    })
+    .join('\n');
 }
 
 export function formatComments(comments: Comment[]): string {
   if (comments.length === 0) return chalk.gray('Комментариев нет.');
-  return comments.map(c => [
-    '',
-    `${chalk.bold(c.createdBy.display)} · ${fmtDate(c.createdAt)}`,
-    `  ${c.text}`,
-  ].join('\n')).join('\n');
+  return comments
+    .map((c) =>
+      ['', `${chalk.bold(c.createdBy.display)} · ${fmtDate(c.createdAt)}`, `  ${c.text}`].join(
+        '\n',
+      ),
+    )
+    .join('\n');
 }
 
 export function formatWorklogs(worklogs: Worklog[]): string {
@@ -187,17 +188,21 @@ export function formatWorklogs(worklogs: Worklog[]): string {
 
 export function formatChecklist(items: ChecklistItem[]): string {
   if (items.length === 0) return chalk.gray('Чеклист пуст.');
-  return items.map((item, i) => {
-    const icon = item.checked ? chalk.green('✓') : chalk.gray('○');
-    const text = item.checked ? chalk.strikethrough(item.text) : item.text;
-    return `  ${icon} ${i + 1}. ${text}`;
-  }).join('\n');
+  return items
+    .map((item, i) => {
+      const icon = item.checked ? chalk.green('✓') : chalk.gray('○');
+      const text = item.checked ? chalk.strikethrough(item.text) : item.text;
+      return `  ${icon} ${i + 1}. ${text}`;
+    })
+    .join('\n');
 }
 
 export function formatLinks(links: IssueLink[]): string {
   if (links.length === 0) return chalk.gray('Связей нет.');
-  return links.map(l => {
-    const rel = l.direction === 'outward' ? l.type.outward : l.type.inward;
-    return `  ${rel}: ${chalk.bold(l.object.key)} ${l.object.display}`;
-  }).join('\n');
+  return links
+    .map((l) => {
+      const rel = l.direction === 'outward' ? l.type.outward : l.type.inward;
+      return `  ${rel}: ${chalk.bold(l.object.key)} ${l.object.display}`;
+    })
+    .join('\n');
 }

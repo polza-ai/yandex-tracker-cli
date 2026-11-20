@@ -86,7 +86,10 @@ export function registerTimeCommand(program: Command): void {
             await saveTimers(timers);
 
             if (opts.json) {
-              process.stdout.write(jsonOutput({ key: resolvedKey, action: 'start', startedAt: timers[resolvedKey] }) + '\n');
+              process.stdout.write(
+                jsonOutput({ key: resolvedKey, action: 'start', startedAt: timers[resolvedKey] }) +
+                  '\n',
+              );
             } else {
               console.log(`${chalk.green('▶')} Таймер запущен для ${resolvedKey}`);
             }
@@ -115,9 +118,14 @@ export function registerTimeCommand(program: Command): void {
             });
 
             if (opts.json) {
-              process.stdout.write(jsonOutput({ key: resolvedKey, action: 'stop', duration: durationStr, worklog }) + '\n');
+              process.stdout.write(
+                jsonOutput({ key: resolvedKey, action: 'stop', duration: durationStr, worklog }) +
+                  '\n',
+              );
             } else {
-              console.log(`${chalk.green('⏹')} Таймер остановлен: ${durationStr} залогировано для ${resolvedKey}`);
+              console.log(
+                `${chalk.green('⏹')} Таймер остановлен: ${durationStr} залогировано для ${resolvedKey}`,
+              );
             }
             break;
           }

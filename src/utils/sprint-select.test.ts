@@ -8,8 +8,8 @@ function sp(id: number, status: Sprint['status'], startDate?: string, archived?:
 
 // Реальная картина доски POLZA: in_progress=«прошлый, не закрытый», draft=«следующий».
 const board: Sprint[] = [
-  sp(47, 'in_progress', '2026-06-08'),  // Спринт 46 — закончился, не закрыт
-  sp(49, 'draft'),                       // Спринт 47 — следующий, дат ещё нет
+  sp(47, 'in_progress', '2026-06-08'), // Спринт 46 — закончился, не закрыт
+  sp(49, 'draft'), // Спринт 47 — следующий, дат ещё нет
   sp(46, 'archived', '2026-06-01'),
   sp(44, 'archived', '2026-05-18'),
 ];
@@ -25,7 +25,11 @@ describe('selectPlanningSprint', () => {
   });
 
   it('среди нескольких draft берёт ближайший по startDate', () => {
-    const s = [sp(50, 'draft', '2026-07-01'), sp(49, 'draft', '2026-06-22'), sp(47, 'in_progress', '2026-06-08')];
+    const s = [
+      sp(50, 'draft', '2026-07-01'),
+      sp(49, 'draft', '2026-06-22'),
+      sp(47, 'in_progress', '2026-06-08'),
+    ];
     expect(selectPlanningSprint(s)?.id).toBe(49);
   });
 

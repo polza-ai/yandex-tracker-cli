@@ -33,10 +33,13 @@ export function registerAttachCommand(program: Command): void {
             } else {
               console.log('');
               for (const a of attachments) {
-                const size = a.size > 1024 * 1024
-                  ? `${(a.size / 1024 / 1024).toFixed(1)} МБ`
-                  : `${Math.round(a.size / 1024)} КБ`;
-                console.log(`  ${chalk.bold(a.id)} ${a.name} (${size}) — ${a.createdBy?.display ?? ''}`);
+                const size =
+                  a.size > 1024 * 1024
+                    ? `${(a.size / 1024 / 1024).toFixed(1)} МБ`
+                    : `${Math.round(a.size / 1024)} КБ`;
+                console.log(
+                  `  ${chalk.bold(a.id)} ${a.name} (${size}) — ${a.createdBy?.display ?? ''}`,
+                );
               }
               console.log('');
             }

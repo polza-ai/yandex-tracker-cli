@@ -36,17 +36,18 @@ export function registerStatusCommand(program: Command): void {
 
         const transitions = await client.getTransitions(resolvedKey);
         const transition = transitions.find(
-          t => t.to.key === mappedStatus ||
-               t.to.display.toLowerCase() === mappedStatus.toLowerCase() ||
-               t.id === mappedStatus
+          (t) =>
+            t.to.key === mappedStatus ||
+            t.to.display.toLowerCase() === mappedStatus.toLowerCase() ||
+            t.id === mappedStatus,
         );
 
         if (!transition) {
-          const available = transitions.map(t => `  ${t.to.key} (${t.to.display})`).join('\n');
+          const available = transitions.map((t) => `  ${t.to.key} (${t.to.display})`).join('\n');
           throw new TrackerCliError(
             `Переход в "${targetStatus}" невозможен из текущего статуса.\n\nДоступные переходы:\n${available}`,
             'INVALID_TRANSITION',
-            4
+            4,
           );
         }
 
@@ -55,11 +56,11 @@ export function registerStatusCommand(program: Command): void {
         } catch (err) {
           if (!opts.resolution && isResolutionRequired(err)) {
             const resolutions = await client.getResolutions();
-            const list = resolutions.map(r => `  ${r.key} (${r.name})`).join('\n');
+            const list = resolutions.map((r) => `  ${r.key} (${r.name})`).join('\n');
             throw new TrackerCliError(
               `Переход в "${transition.to.display}" требует резолюцию — укажите её через --resolution <key>.\n\nДоступные резолюции:\n${list}`,
               'RESOLUTION_REQUIRED',
-              4
+              4,
             );
           }
           throw err;
@@ -68,7 +69,9 @@ export function registerStatusCommand(program: Command): void {
         if (opts.json) {
           process.stdout.write(jsonOutput({ key: resolvedKey, status: transition.to }) + '\n');
         } else {
-          console.log(`${chalk.green('✓')} ${resolvedKey}: статус изменён на ${chalk.bold(transition.to.display)}`);
+          console.log(
+            `${chalk.green('✓')} ${resolvedKey}: статус изменён на ${chalk.bold(transition.to.display)}`,
+          );
         }
       } catch (error) {
         handleApiError(error);

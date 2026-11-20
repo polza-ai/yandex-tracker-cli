@@ -56,7 +56,12 @@ export function registerCreateCommand(program: Command): void {
         };
 
         if (opts.dryRun) {
-          const preview = { dryRun: true, method: 'POST', endpoint: '/issues', body: client.buildCreateIssueBody(params) };
+          const preview = {
+            dryRun: true,
+            method: 'POST',
+            endpoint: '/issues',
+            body: client.buildCreateIssueBody(params),
+          };
           if (opts.json) {
             process.stdout.write(jsonOutput(preview) + '\n');
           } else {

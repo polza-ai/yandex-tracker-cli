@@ -1,10 +1,10 @@
 # Claude Code — Project Configuration
 
 ## Стек
-TypeScript (strict), ESM ("type": "module"), Commander.js, Axios, Zod, dayjs, Vitest.
+TypeScript (strict), ESM ("type": "module"), Commander.js, Axios, Zod, dayjs. Сборка — Rolldown, линтер — Oxlint, форматтер — Oxfmt, тесты — Vitest.
 
 ## Команды
-- `npm run dev -- <args>` — запуск через tsx
+- `npm run dev -- <args>` — сборка Rolldown и запуск CLI
 - `npm run build` — компиляция в dist/
 - `npm run typecheck` — проверка типов
 - `npm test` — тесты

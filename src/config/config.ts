@@ -2,7 +2,13 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, dirname, relative, isAbsolute } from 'node:path';
 import { homedir } from 'node:os';
-import { globalConfigSchema, projectConfigSchema, type GlobalConfig, type ProjectConfig, type ResolvedConfig } from './config.schema.js';
+import {
+  globalConfigSchema,
+  projectConfigSchema,
+  type GlobalConfig,
+  type ProjectConfig,
+  type ResolvedConfig,
+} from './config.schema.js';
 
 export const GLOBAL_CONFIG_DIR = join(homedir(), '.tracker-cli');
 export const GLOBAL_CONFIG_PATH = join(GLOBAL_CONFIG_DIR, 'config.json');
@@ -78,10 +84,14 @@ export async function loadConfig(): Promise<ResolvedConfig> {
   const apiBaseUrl = global?.apiBaseUrl ?? DEFAULT_API_BASE_URL;
 
   if (!token) {
-    throw new Error('Токен не задан. Добавьте "token" в .tracker.json или запустите "tracker init".');
+    throw new Error(
+      'Токен не задан. Добавьте "token" в .tracker.json или запустите "tracker init".',
+    );
   }
   if (!orgId && !cloudOrgId) {
-    throw new Error('Не задан orgId или cloudOrgId. Укажите его в .tracker.json или в глобальном конфиге.');
+    throw new Error(
+      'Не задан orgId или cloudOrgId. Укажите его в .tracker.json или в глобальном конфиге.',
+    );
   }
 
   return {
@@ -105,7 +115,10 @@ export async function saveGlobalConfig(config: GlobalConfig): Promise<void> {
   await writeFile(GLOBAL_CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8');
 }
 
-export async function saveProjectConfig(config: ProjectConfig, dir: string = process.cwd()): Promise<void> {
+export async function saveProjectConfig(
+  config: ProjectConfig,
+  dir: string = process.cwd(),
+): Promise<void> {
   const path = join(dir, PROJECT_CONFIG_NAME);
   await writeFile(path, JSON.stringify(config, null, 2), 'utf-8');
 }

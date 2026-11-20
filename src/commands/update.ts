@@ -11,7 +11,9 @@ import { formatIssueDetail } from '../formatters/table.js';
 export function registerUpdateCommand(program: Command): void {
   program
     .command('update <key>')
-    .description('Обновить задачу (summary, description, type, assignee, priority, story-points, поля)')
+    .description(
+      'Обновить задачу (summary, description, type, assignee, priority, story-points, поля)',
+    )
     .option('-s, --summary <text>', 'Новое название')
     .option('-d, --description <text>', 'Новое описание')
     .option('-F, --description-file <path>', 'Новое описание из файла (взаимоисключимо с -d)')
@@ -45,12 +47,19 @@ export function registerUpdateCommand(program: Command): void {
         if (storyPoints !== undefined) params.storyPoints = storyPoints;
 
         if (Object.keys(params).length === 0) {
-          console.error('Укажите что обновить: --summary, --description(-file), --type, --assignee, --priority, --sprint, --tag, --story-points, --field');
+          console.error(
+            'Укажите что обновить: --summary, --description(-file), --type, --assignee, --priority, --sprint, --tag, --story-points, --field',
+          );
           process.exit(1);
         }
 
         if (opts.dryRun) {
-          const preview = { dryRun: true, method: 'PATCH', endpoint: `/issues/${resolvedKey}`, body: params };
+          const preview = {
+            dryRun: true,
+            method: 'PATCH',
+            endpoint: `/issues/${resolvedKey}`,
+            body: params,
+          };
           if (opts.json) {
             process.stdout.write(jsonOutput(preview) + '\n');
           } else {

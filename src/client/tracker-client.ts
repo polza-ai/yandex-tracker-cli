@@ -3,9 +3,19 @@ import { createReadStream } from 'node:fs';
 import { paginate, collectAll } from './pagination.js';
 import type { Readable } from 'node:stream';
 import type {
-  Issue, Transition, Comment, Worklog, ChecklistItem,
-  IssueLink, CreateIssueParams, IssueFilter, WorklogParams, Attachment,
-  Sprint, UserRef, QueueInfo
+  Issue,
+  Transition,
+  Comment,
+  Worklog,
+  ChecklistItem,
+  IssueLink,
+  CreateIssueParams,
+  IssueFilter,
+  WorklogParams,
+  Attachment,
+  Sprint,
+  UserRef,
+  QueueInfo,
 } from './types.js';
 
 export interface TrackerClientConfig {
@@ -20,12 +30,10 @@ export class TrackerClient {
   private http: AxiosInstance;
 
   constructor(config: TrackerClientConfig) {
-    const authHeader = config.tokenType === 'iam'
-      ? `Bearer ${config.token}`
-      : `OAuth ${config.token}`;
+    const authHeader = config.tokenType === 'iam' ? `Bearer ${config.token}` : `OAuth ${config.token}`;
 
     const headers: Record<string, string> = {
-      'Authorization': authHeader,
+      Authorization: authHeader,
       'Content-Type': 'application/json',
     };
 
@@ -43,8 +51,8 @@ export class TrackerClient {
 
     this.http.interceptors.response.use(undefined, async (error: AxiosError) => {
       if (error.response?.status === 429 && error.config) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] as string ?? '2', 10);
-        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        const retryAfter = parseInt((error.response.headers['retry-after'] as string) ?? '2', 10);
+        await new Promise((r) => setTimeout(r, retryAfter * 1000));
         return this.http.request(error.config);
       }
       throw error;
@@ -144,10 +152,7 @@ export class TrackerClient {
     const body: Record<string, unknown> = {};
     if (comment) body.comment = comment;
     if (resolution) body.resolution = resolution;
-    await this.http.post(
-      `/issues/${key}/transitions/${transitionId}/_execute`,
-      Object.keys(body).length > 0 ? body : undefined,
-    );
+    await this.http.post(`/issues/${key}/transitions/${transitionId}/_execute`, Object.keys(body).length > 0 ? body : undefined);
   }
 
   async getResolutions(): Promise<Array<{ key: string; name: string }>> {
@@ -207,7 +212,7 @@ export class TrackerClient {
 
   async getCurrentSprint(boardId: number): Promise<Sprint | null> {
     const sprints = await this.getSprints(boardId);
-    return sprints.find(s => s.status === 'in_progress') ?? null;
+    return sprints.find((s) => s.status === 'in_progress') ?? null;
   }
 
   // Checklists
@@ -252,17 +257,13 @@ export class TrackerClient {
     const FormData = (await import('form-data')).default;
     const form = new FormData();
     form.append('file', createReadStream(filePath), filename);
-    const { data } = await this.http.post<Attachment>(
-      `/issues/${key}/attachments`,
-      form,
-      { headers: { ...form.getHeaders() } },
-    );
+    const { data } = await this.http.post<Attachment>(`/issues/${key}/attachments`, form, { headers: { ...form.getHeaders() } });
     return data;
   }
 
   async downloadAttachment(key: string, attachmentId: string): Promise<{ name: string; stream: Readable }> {
     const attachments = await this.getAttachments(key);
-    const att = attachments.find(a => a.id === attachmentId);
+    const att = attachments.find((a) => a.id === attachmentId);
     const name = att?.name ?? 'attachment';
     const { data } = await this.http.get(att?.content ?? `/attachments/${attachmentId}`, {
       responseType: 'stream',

@@ -1,0 +1,9 @@
+{
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": ["src/client/tracker-client.ts"],
+      "options": { "printWidth": 160 }
+    }
+  ]
+}

@@ -59,7 +59,9 @@ export function registerChecklistCommand(program: Command): void {
           if (opts.json) {
             process.stdout.write(jsonOutput({ ...item, checked: !item.checked }) + '\n');
           } else {
-            console.log(`${icon} Пункт "${item.text}" — ${!item.checked ? 'выполнен' : 'не выполнен'}`);
+            console.log(
+              `${icon} Пункт "${item.text}" — ${!item.checked ? 'выполнен' : 'не выполнен'}`,
+            );
           }
           return;
         }

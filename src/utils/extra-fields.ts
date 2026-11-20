@@ -34,7 +34,8 @@ export function parseFieldOptions(pairs: string[] | undefined): Record<string, u
     } else {
       throw new TrackerCliError(
         `Неверный формат --field "${pair}". Ожидается key=value или key:=json.`,
-        'INVALID_FIELD', 1,
+        'INVALID_FIELD',
+        1,
       );
     }
 
@@ -66,7 +67,8 @@ export function resolveDescription(
   if (description !== undefined && descriptionFile !== undefined) {
     throw new TrackerCliError(
       'Используйте либо --description, либо --description-file, не оба сразу.',
-      'INVALID_ARGS', 1,
+      'INVALID_ARGS',
+      1,
     );
   }
   if (descriptionFile !== undefined) {
@@ -75,7 +77,8 @@ export function resolveDescription(
     } catch (e) {
       throw new TrackerCliError(
         `Не удалось прочитать файл описания "${descriptionFile}": ${(e as Error).message}`,
-        'FILE_ERROR', 1,
+        'FILE_ERROR',
+        1,
       );
     }
   }
@@ -89,7 +92,8 @@ export function parseStoryPoints(value: string | undefined): number | undefined 
   if (!Number.isFinite(n)) {
     throw new TrackerCliError(
       `Неверное значение --story-points "${value}". Ожидается число.`,
-      'INVALID_ARGS', 1,
+      'INVALID_ARGS',
+      1,
     );
   }
   return n;

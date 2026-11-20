@@ -36,9 +36,15 @@ export function registerLinkCommand(program: Command): void {
   program
     .command('link <key> [target]')
     .description('Связать задачи или показать связи')
-    .option('-t, --type <type>', 'Тип связи (relates, blocks, depends, duplicates, parent, subtask)', 'relates')
+    .option(
+      '-t, --type <type>',
+      'Тип связи (relates, blocks, depends, duplicates, parent, subtask)',
+      'relates',
+    )
     .option('--json', 'Вывод в JSON')
-    .addHelpText('after', `
+    .addHelpText(
+      'after',
+      `
 Семантика (порядок аргументов важен, тип описывает роль <key>):
   tracker link A B -t parent    A становится РОДИТЕЛЕМ B
   tracker link A B -t subtask   A становится ПОДЗАДАЧЕЙ B
@@ -51,7 +57,8 @@ export function registerLinkCommand(program: Command): void {
 Чтение вывода tracker link X (метка — роль самого X):
   «Подзадача: Y»           = X — подзадача Y
   «Родительская задача: Y» = X — родитель Y
-`)
+`,
+    )
     .action(async (key: string, target: string | undefined, opts) => {
       try {
         const config = await loadConfig();
@@ -75,7 +82,9 @@ export function registerLinkCommand(program: Command): void {
         if (opts.json) {
           process.stdout.write(jsonOutput(link) + '\n');
         } else {
-          console.log(`${chalk.green('✓')} ${describeLink(resolvedKey, resolvedTarget, opts.type)}`);
+          console.log(
+            `${chalk.green('✓')} ${describeLink(resolvedKey, resolvedTarget, opts.type)}`,
+          );
         }
       } catch (error) {
         handleApiError(error);

@@ -32,7 +32,9 @@ const program = new Command();
 program
   .name('tracker')
   .description('CLI для Yandex Tracker — для людей и AI-агентов')
-  .version(`${pkg.version}\n\nhttps://github.com/polza-ai/yandex-tracker-cli\n\nСделано с ❤️ в polza.ai — №1 LLM агрегатор в России\nhttps://polza.ai`);
+  .version(
+    `${pkg.version}\n\nhttps://github.com/polza-ai/yandex-tracker-cli\n\nСделано с ❤️ в polza.ai — №1 LLM агрегатор в России\nhttps://polza.ai`,
+  );
 
 registerInitCommand(program);
 registerTaskCommand(program);
@@ -61,7 +63,9 @@ program.parseAsync = async (argv?: string[]) => {
     if (isJson) {
       process.stdout.write(formatError(error, true) + '\n');
     }
-    process.exit(error instanceof Error && 'exitCode' in error ? (error as { exitCode?: number }).exitCode : 1);
+    process.exit(
+      error instanceof Error && 'exitCode' in error ? (error as { exitCode?: number }).exitCode : 1,
+    );
   }
 };
 

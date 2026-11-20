@@ -9,7 +9,9 @@ import { formatSprint, formatSprintList, formatIssueList } from '../formatters/t
 export function registerSprintCommand(program: Command): void {
   program
     .command('sprint')
-    .description('Спринт доски: текущий (in_progress), список (--list) или целевой для планирования (--planning)')
+    .description(
+      'Спринт доски: текущий (in_progress), список (--list) или целевой для планирования (--planning)',
+    )
     .option('-b, --board <id>', 'ID доски')
     .option('--tasks', 'Показать задачи спринта')
     .option('--list', 'Список спринтов доски')
@@ -22,7 +24,9 @@ export function registerSprintCommand(program: Command): void {
         const boardId = opts.board ? parseInt(opts.board, 10) : config.boardId;
 
         if (!boardId) {
-          console.error('ID доски не указан. Используйте --board <id> или добавьте boardId в .tracker.json');
+          console.error(
+            'ID доски не указан. Используйте --board <id> или добавьте boardId в .tracker.json',
+          );
           process.exit(1);
         }
 
