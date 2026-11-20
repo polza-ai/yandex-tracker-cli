@@ -2,6 +2,7 @@ import type { AxiosInstance } from 'axios';
 
 export interface PaginatedOptions {
   perPage?: number;
+  continueOnFullPage?: boolean;
 }
 
 export async function* paginate<T>(
@@ -23,11 +24,13 @@ export async function* paginate<T>(
 
     const items: T[] = Array.isArray(response.data) ? response.data : [];
 
-    const totalPagesHeader = response.headers['x-total-pages'];
-    if (totalPagesHeader) {
-      totalPages = parseInt(totalPagesHeader, 10);
+    const totalPagesHeader = Number(response.headers['x-total-pages']);
+    if (Number.isInteger(totalPagesHeader) && totalPagesHeader > 0) {
+      totalPages = totalPagesHeader;
     } else if (items.length < perPage) {
       totalPages = page;
+    } else if (options.continueOnFullPage) {
+      totalPages = page + 1;
     }
 
     if (items.length > 0) {
