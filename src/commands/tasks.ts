@@ -92,12 +92,8 @@ export function registerTasksCommand(program: Command): void {
           return;
         }
 
-        let issues = await client.searchIssues(filter);
-
         const limit = opts.limit ? parseInt(opts.limit, 10) : 50;
-        if (limit > 0) {
-          issues = issues.slice(0, limit);
-        }
+        const issues = await client.searchIssues(filter, limit > 0 ? limit : Infinity);
 
         if (opts.json) {
           process.stdout.write(jsonOutput(issues) + '\n');

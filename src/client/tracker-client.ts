@@ -82,8 +82,9 @@ export class TrackerClient {
     return query ? { query } : {};
   }
 
-  async searchIssues(filter: IssueFilter): Promise<Issue[]> {
-    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)));
+  async searchIssues(filter: IssueFilter, limit = Infinity): Promise<Issue[]> {
+    const { issues } = await this.searchAllIssues(filter, limit);
+    return issues;
   }
 
   /** Точный подсчёт задач через _count, без выгрузки тел. Игнорирует сортировку. */
@@ -97,7 +98,7 @@ export class TrackerClient {
     const body = this.buildSearchBody(filter);
     const issues: Issue[] = [];
     let capped = false;
-    for await (const page of paginate<Issue>(this.http, '/issues/_search', { perPage: 100 }, 'post', body)) {
+    for await (const page of paginate<Issue>(this.http, '/issues/_search', { perPage: Math.min(100, maxResults), continueOnFullPage: true }, 'post', body)) {
       issues.push(...page);
       if (issues.length >= maxResults) {
         capped = true;
