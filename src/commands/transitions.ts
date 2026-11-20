@@ -24,7 +24,9 @@ export function registerTransitionsCommand(program: Command): void {
           process.stdout.write(jsonOutput({ currentStatus: issue.status, transitions }) + '\n');
         } else {
           console.log('');
-          console.log(`${chalk.bold(resolvedKey)} — текущий статус: ${chalk.cyan(issue.status.display)} (${issue.status.key})`);
+          console.log(
+            `${chalk.bold(resolvedKey)} — текущий статус: ${chalk.cyan(issue.status.display)} (${issue.status.key})`,
+          );
           console.log('');
           if (transitions.length === 0) {
             console.log(chalk.gray('  Нет доступных переходов.'));

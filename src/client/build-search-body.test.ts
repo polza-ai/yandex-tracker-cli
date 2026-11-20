@@ -8,14 +8,20 @@ function makeClient(): TrackerClient {
 describe('buildSearchBody', () => {
   it('passes a custom TQL query as-is and appends sort when requested', () => {
     const client = makeClient();
-    expect(client.buildSearchBody({ query: 'Resolution: empty()', orderBy: 'Updated DESC' }))
-      .toEqual({ query: 'Resolution: empty() "Sort by": Updated DESC' });
-    expect(client.buildSearchBody({ query: 'Resolution: empty()', orderBy: 'Updated DESC' }, false))
-      .toEqual({ query: 'Resolution: empty()' });
+    expect(
+      client.buildSearchBody({ query: 'Resolution: empty()', orderBy: 'Updated DESC' }),
+    ).toEqual({ query: 'Resolution: empty() "Sort by": Updated DESC' });
+    expect(
+      client.buildSearchBody({ query: 'Resolution: empty()', orderBy: 'Updated DESC' }, false),
+    ).toEqual({ query: 'Resolution: empty()' });
   });
 
   it('combines queue, assignee:me and status with AND', () => {
-    const body = makeClient().buildSearchBody({ queue: 'HELPDESK', assignee: 'me', status: 'open' });
+    const body = makeClient().buildSearchBody({
+      queue: 'HELPDESK',
+      assignee: 'me',
+      status: 'open',
+    });
     expect(body).toEqual({ query: 'Queue: "HELPDESK" AND Assignee: me() AND Status: "open"' });
   });
 
@@ -35,7 +41,10 @@ describe('buildSearchBody', () => {
   });
 
   it('does not append sort when includeSort is false', () => {
-    const body = makeClient().buildSearchBody({ queue: 'HELPDESK', orderBy: 'Updated DESC' }, false);
+    const body = makeClient().buildSearchBody(
+      { queue: 'HELPDESK', orderBy: 'Updated DESC' },
+      false,
+    );
     expect(body).toEqual({ query: 'Queue: "HELPDESK" AND Resolution: empty()' });
   });
 

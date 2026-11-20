@@ -13,8 +13,14 @@ describe('buildCreateIssueBody', () => {
 
   it('maps storyPoints and typed fields', () => {
     const body = makeClient().buildCreateIssueBody({
-      queue: 'POLZA', summary: 'Фича', type: 'newFeature', priority: 'normal',
-      sprint: 47, parent: 'POLZA-1', tags: ['a'], storyPoints: 8,
+      queue: 'POLZA',
+      summary: 'Фича',
+      type: 'newFeature',
+      priority: 'normal',
+      sprint: 47,
+      parent: 'POLZA-1',
+      tags: ['a'],
+      storyPoints: 8,
     });
     expect(body.storyPoints).toBe(8);
     expect(body.type).toBe('newFeature');
@@ -25,7 +31,8 @@ describe('buildCreateIssueBody', () => {
 
   it('merges extra fields but typed fields win', () => {
     const body = makeClient().buildCreateIssueBody({
-      queue: 'POLZA', summary: 'X',
+      queue: 'POLZA',
+      summary: 'X',
       storyPoints: 5,
       fields: { deadline: '2026-07-01', storyPoints: 99 },
     });

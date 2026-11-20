@@ -20,13 +20,16 @@ describe('parseFieldOptions', () => {
 
   it('parses key:=value as JSON number/bool/null', () => {
     expect(parseFieldOptions(['storyPoints:=8', 'flag:=true', 'x:=null'])).toEqual({
-      storyPoints: 8, flag: true, x: null,
+      storyPoints: 8,
+      flag: true,
+      x: null,
     });
   });
 
   it('parses key:=json object and array', () => {
     expect(parseFieldOptions(['obj:={"a":1}', 'arr:=[1,2]'])).toEqual({
-      obj: { a: 1 }, arr: [1, 2],
+      obj: { a: 1 },
+      arr: [1, 2],
     });
   });
 
@@ -54,8 +57,12 @@ describe('parseFieldOptions', () => {
 
 describe('resolveDescription', () => {
   let dir: string;
-  beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'tracker-desc-')); });
-  afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'tracker-desc-'));
+  });
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
 
   it('returns inline description', () => {
     expect(resolveDescription('hello', undefined)).toBe('hello');
@@ -76,7 +83,9 @@ describe('resolveDescription', () => {
   });
 
   it('throws when file missing', () => {
-    expect(() => resolveDescription(undefined, join(dir, 'nope.md'))).toThrow(/Не удалось прочитать/);
+    expect(() => resolveDescription(undefined, join(dir, 'nope.md'))).toThrow(
+      /Не удалось прочитать/,
+    );
   });
 });
 

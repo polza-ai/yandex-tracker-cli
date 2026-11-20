@@ -1,34 +1,29 @@
 import { z } from 'zod';
 
-export const globalConfigSchema = z.object({
-  orgId: z.string().optional(),
-  cloudOrgId: z.string().optional(),
-  token: z.string().min(1, 'Токен обязателен'),
-  tokenType: z.enum(['oauth', 'iam']).default('oauth'),
-  defaultQueue: z.string().optional(),
-  userLogin: z.string().optional(),
-  apiBaseUrl: z.string().url().default('https://api.tracker.yandex.net/v2'),
-}).refine(
-  data => data.orgId || data.cloudOrgId,
-  { message: 'Укажите orgId или cloudOrgId' }
-);
+export const globalConfigSchema = z
+  .object({
+    orgId: z.string().optional(),
+    cloudOrgId: z.string().optional(),
+    token: z.string().min(1, 'Токен обязателен'),
+    tokenType: z.enum(['oauth', 'iam']).default('oauth'),
+    defaultQueue: z.string().optional(),
+    userLogin: z.string().optional(),
+    apiBaseUrl: z.string().url().default('https://api.tracker.yandex.net/v2'),
+  })
+  .refine((data) => data.orgId || data.cloudOrgId, { message: 'Укажите orgId или cloudOrgId' });
 
-export const projectConfigSchema = z.object({
-  queue: z.string().optional(),
-  boardId: z.number().optional(),
-  branchPrefix: z.string().default('feature'),
-  statusMap: z.record(z.string()).default({
-    open: 'open',
-    inProgress: 'inProgress',
-    review: 'inReview',
-    testing: 'testing',
-    closed: 'closed',
-  }),
-  orgId: z.string().optional(),
-  cloudOrgId: z.string().optional(),
-  token: z.string().min(1).optional(),
-  tokenType: z.enum(['oauth', 'iam']).optional(),
-}).partial();
+export const projectConfigSchema = z
+  .object({
+    queue: z.string().optional(),
+    boardId: z.number().optional(),
+    branchPrefix: z.string().optional(),
+    statusMap: z.record(z.string(), z.string()).optional(),
+    orgId: z.string().optional(),
+    cloudOrgId: z.string().optional(),
+    token: z.string().min(1).optional(),
+    tokenType: z.enum(['oauth', 'iam']).optional(),
+  })
+  .partial();
 
 export type GlobalConfig = z.infer<typeof globalConfigSchema>;
 export type ProjectConfig = z.infer<typeof projectConfigSchema>;

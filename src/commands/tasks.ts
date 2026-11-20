@@ -79,10 +79,15 @@ export function registerTasksCommand(program: Command): void {
         if (opts.fetchAll) {
           const SAFETY_CAP = 10000;
           const userLimit = opts.limit ? parseInt(opts.limit, 10) : undefined;
-          const maxResults = Math.min(userLimit && userLimit > 0 ? userLimit : SAFETY_CAP, SAFETY_CAP);
+          const maxResults = Math.min(
+            userLimit && userLimit > 0 ? userLimit : SAFETY_CAP,
+            SAFETY_CAP,
+          );
           const { issues, capped } = await client.searchAllIssues(filter, maxResults);
           if (capped && maxResults === SAFETY_CAP) {
-            process.stderr.write(`⚠ Достигнут предел ${SAFETY_CAP} задач, результат обрезан. Уточните запрос.\n`);
+            process.stderr.write(
+              `⚠ Достигнут предел ${SAFETY_CAP} задач, результат обрезан. Уточните запрос.\n`,
+            );
           }
           if (opts.json) {
             process.stdout.write(jsonOutput(issues) + '\n');

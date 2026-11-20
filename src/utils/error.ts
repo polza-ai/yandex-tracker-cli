@@ -4,7 +4,7 @@ export class TrackerCliError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly exitCode: number = 1
+    public readonly exitCode: number = 1,
   ) {
     super(message);
     this.name = 'TrackerCliError';
@@ -43,32 +43,26 @@ export function handleApiError(error: unknown): never {
       case 401:
         throw new TrackerCliError(
           'Неверный токен авторизации. Запустите "tracker init" для настройки.',
-          'AUTH_ERROR', 2
+          'AUTH_ERROR',
+          2,
         );
       case 403:
-        throw new TrackerCliError(
-          `Нет доступа. ${apiMessage}`,
-          'FORBIDDEN', 2
-        );
+        throw new TrackerCliError(`Нет доступа. ${apiMessage}`, 'FORBIDDEN', 2);
       case 404:
-        throw new TrackerCliError(
-          `Не найдено. ${apiMessage}`,
-          'NOT_FOUND', 3
-        );
+        throw new TrackerCliError(`Не найдено. ${apiMessage}`, 'NOT_FOUND', 3);
       case 422:
-        throw new TrackerCliError(
-          `Невалидный запрос: ${apiMessage}`,
-          'VALIDATION_ERROR', 4
-        );
+        throw new TrackerCliError(`Невалидный запрос: ${apiMessage}`, 'VALIDATION_ERROR', 4);
       case 429:
         throw new TrackerCliError(
           'Превышен лимит запросов. Подождите и попробуйте снова.',
-          'RATE_LIMIT', 1
+          'RATE_LIMIT',
+          1,
         );
       default:
         throw new TrackerCliError(
           `Ошибка API (${status}): ${apiMessage || error.message}`,
-          'API_ERROR', 1
+          'API_ERROR',
+          1,
         );
     }
   }

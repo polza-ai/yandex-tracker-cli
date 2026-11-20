@@ -5,19 +5,33 @@ import { readFile, writeFile, appendFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
-import { saveGlobalConfig, saveProjectConfig, GLOBAL_CONFIG_PATH, PROJECT_CONFIG_NAME } from '../config/config.js';
+import {
+  saveGlobalConfig,
+  saveProjectConfig,
+  GLOBAL_CONFIG_PATH,
+  PROJECT_CONFIG_NAME,
+} from '../config/config.js';
 import type { GlobalConfig, ProjectConfig } from '../config/config.schema.js';
 import { TrackerClient } from '../client/tracker-client.js';
 
-const OAUTH_URL = 'https://oauth.yandex.ru/authorize?response_type=token&client_id=2e8b250c69cb4dbb8ccf4d9009e7ba9c';
+const OAUTH_URL =
+  'https://oauth.yandex.ru/authorize?response_type=token&client_id=2e8b250c69cb4dbb8ccf4d9009e7ba9c';
 
-async function prompt(rl: ReturnType<typeof createInterface>, question: string, defaultValue?: string): Promise<string> {
+async function prompt(
+  rl: ReturnType<typeof createInterface>,
+  question: string,
+  defaultValue?: string,
+): Promise<string> {
   const suffix = defaultValue ? ` [${defaultValue}]` : '';
   const answer = await rl.question(`${question}${suffix}: `);
   return answer.trim() || defaultValue || '';
 }
 
-async function confirm(rl: ReturnType<typeof createInterface>, question: string, defaultYes: boolean): Promise<boolean> {
+async function confirm(
+  rl: ReturnType<typeof createInterface>,
+  question: string,
+  defaultYes: boolean,
+): Promise<boolean> {
   const suffix = defaultYes ? '[Y/n]' : '[y/N]';
   const answer = (await rl.question(`${question} ${suffix}: `)).trim().toLowerCase();
   if (!answer) return defaultYes;
@@ -160,14 +174,18 @@ export function registerInitCommand(program: Command): void {
             });
             console.log('');
 
-            const queueChoice = await prompt(rl, 'Выберите очередь (номер или ключ, Enter — пропустить)', '');
+            const queueChoice = await prompt(
+              rl,
+              'Выберите очередь (номер или ключ, Enter — пропустить)',
+              '',
+            );
 
             if (queueChoice) {
               const idx = parseInt(queueChoice, 10) - 1;
               if (idx >= 0 && idx < queues.length) {
                 defaultQueue = queues[idx].key;
               } else {
-                const found = queues.find(q => q.key.toLowerCase() === queueChoice.toLowerCase());
+                const found = queues.find((q) => q.key.toLowerCase() === queueChoice.toLowerCase());
                 defaultQueue = found ? found.key : queueChoice.toUpperCase();
               }
             }
@@ -220,7 +238,11 @@ export function registerInitCommand(program: Command): void {
           let projectTokenType: 'oauth' | 'iam' | undefined;
 
           console.log('');
-          const overrideOrg = await confirm(rl, 'Использовать другую организацию для этого проекта?', false);
+          const overrideOrg = await confirm(
+            rl,
+            'Использовать другую организацию для этого проекта?',
+            false,
+          );
 
           if (overrideOrg) {
             console.log('');
@@ -241,7 +263,11 @@ export function registerInitCommand(program: Command): void {
               process.exit(1);
             }
 
-            const overrideToken = await confirm(rl, 'Использовать другой токен для этого проекта?', false);
+            const overrideToken = await confirm(
+              rl,
+              'Использовать другой токен для этого проекта?',
+              false,
+            );
 
             if (overrideToken) {
               console.log('');
@@ -271,7 +297,9 @@ export function registerInitCommand(program: Command): void {
                   apiBaseUrl: 'https://api.tracker.yandex.net/v2',
                 });
                 const projectMyself = await projectClient.getMyself();
-                console.log(`  ✅ Проектные креды работают. Пользователь: ${projectMyself.display}`);
+                console.log(
+                  `  ✅ Проектные креды работают. Пользователь: ${projectMyself.display}`,
+                );
               } catch (err) {
                 const msg = err instanceof Error ? err.message : String(err);
                 console.log(`  ⚠️  Не удалось проверить проектные креды: ${msg}`);

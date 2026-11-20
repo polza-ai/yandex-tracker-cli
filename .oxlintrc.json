@@ -1,0 +1,1 @@
+{"plugins":["typescript"],"categories":{"correctness":"error"},"rules":{"typescript/no-explicit-any":"warn","no-unused-vars":["error",{"argsIgnorePattern":"^_","varsIgnorePattern":"^_"}]}}

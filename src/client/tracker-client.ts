@@ -3,9 +3,19 @@ import { createReadStream } from 'node:fs';
 import { paginate, collectAll } from './pagination.js';
 import type { Readable } from 'node:stream';
 import type {
-  Issue, Transition, Comment, Worklog, ChecklistItem,
-  IssueLink, CreateIssueParams, IssueFilter, WorklogParams, Attachment,
-  Sprint, UserRef, QueueInfo
+  Issue,
+  Transition,
+  Comment,
+  Worklog,
+  ChecklistItem,
+  IssueLink,
+  CreateIssueParams,
+  IssueFilter,
+  WorklogParams,
+  Attachment,
+  Sprint,
+  UserRef,
+  QueueInfo,
 } from './types.js';
 
 export interface TrackerClientConfig {
@@ -20,12 +30,11 @@ export class TrackerClient {
   private http: AxiosInstance;
 
   constructor(config: TrackerClientConfig) {
-    const authHeader = config.tokenType === 'iam'
-      ? `Bearer ${config.token}`
-      : `OAuth ${config.token}`;
+    const authHeader =
+      config.tokenType === 'iam' ? `Bearer ${config.token}` : `OAuth ${config.token}`;
 
     const headers: Record<string, string> = {
-      'Authorization': authHeader,
+      Authorization: authHeader,
       'Content-Type': 'application/json',
     };
 
@@ -43,8 +52,8 @@ export class TrackerClient {
 
     this.http.interceptors.response.use(undefined, async (error: AxiosError) => {
       if (error.response?.status === 429 && error.config) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] as string ?? '2', 10);
-        await new Promise(r => setTimeout(r, retryAfter * 1000));
+        const retryAfter = parseInt((error.response.headers['retry-after'] as string) ?? '2', 10);
+        await new Promise((r) => setTimeout(r, retryAfter * 1000));
         return this.http.request(error.config);
       }
       throw error;
@@ -67,7 +76,9 @@ export class TrackerClient {
       const conditions: string[] = [];
       if (filter.queue) conditions.push(`Queue: "${filter.queue}"`);
       if (filter.assignee) {
-        conditions.push(filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`);
+        conditions.push(
+          filter.assignee === 'me' ? 'Assignee: me()' : `Assignee: "${filter.assignee}"`,
+        );
       }
       if (filter.status) {
         conditions.push(`Status: "${filter.status}"`);
@@ -83,7 +94,9 @@ export class TrackerClient {
   }
 
   async searchIssues(filter: IssueFilter): Promise<Issue[]> {
-    return collectAll(paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)));
+    return collectAll(
+      paginate<Issue>(this.http, '/issues/_search', {}, 'post', this.buildSearchBody(filter)),
+    );
   }
 
   /** Точный подсчёт задач через _count, без выгрузки тел. Игнорирует сортировку. */
@@ -93,11 +106,20 @@ export class TrackerClient {
   }
 
   /** Выгрузка всех страниц с safety-cap. perPage=100 — потолок страницы Tracker. */
-  async searchAllIssues(filter: IssueFilter, maxResults: number): Promise<{ issues: Issue[]; capped: boolean }> {
+  async searchAllIssues(
+    filter: IssueFilter,
+    maxResults: number,
+  ): Promise<{ issues: Issue[]; capped: boolean }> {
     const body = this.buildSearchBody(filter);
     const issues: Issue[] = [];
     let capped = false;
-    for await (const page of paginate<Issue>(this.http, '/issues/_search', { perPage: 100 }, 'post', body)) {
+    for await (const page of paginate<Issue>(
+      this.http,
+      '/issues/_search',
+      { perPage: 100 },
+      'post',
+      body,
+    )) {
       issues.push(...page);
       if (issues.length >= maxResults) {
         capped = true;
@@ -140,7 +162,12 @@ export class TrackerClient {
     return data;
   }
 
-  async executeTransition(key: string, transitionId: string, comment?: string, resolution?: string): Promise<void> {
+  async executeTransition(
+    key: string,
+    transitionId: string,
+    comment?: string,
+    resolution?: string,
+  ): Promise<void> {
     const body: Record<string, unknown> = {};
     if (comment) body.comment = comment;
     if (resolution) body.resolution = resolution;
@@ -166,7 +193,10 @@ export class TrackerClient {
     return data;
   }
 
-  async uploadTempAttachment(filePath: string, filename: string): Promise<{ id: string; name: string; [k: string]: unknown }> {
+  async uploadTempAttachment(
+    filePath: string,
+    filename: string,
+  ): Promise<{ id: string; name: string; [k: string]: unknown }> {
     const FormData = (await import('form-data')).default;
     const form = new FormData();
     form.append('file', createReadStream(filePath), filename);
@@ -207,7 +237,7 @@ export class TrackerClient {
 
   async getCurrentSprint(boardId: number): Promise<Sprint | null> {
     const sprints = await this.getSprints(boardId);
-    return sprints.find(s => s.status === 'in_progress') ?? null;
+    return sprints.find((s) => s.status === 'in_progress') ?? null;
   }
 
   // Checklists
@@ -252,17 +282,18 @@ export class TrackerClient {
     const FormData = (await import('form-data')).default;
     const form = new FormData();
     form.append('file', createReadStream(filePath), filename);
-    const { data } = await this.http.post<Attachment>(
-      `/issues/${key}/attachments`,
-      form,
-      { headers: { ...form.getHeaders() } },
-    );
+    const { data } = await this.http.post<Attachment>(`/issues/${key}/attachments`, form, {
+      headers: { ...form.getHeaders() },
+    });
     return data;
   }
 
-  async downloadAttachment(key: string, attachmentId: string): Promise<{ name: string; stream: Readable }> {
+  async downloadAttachment(
+    key: string,
+    attachmentId: string,
+  ): Promise<{ name: string; stream: Readable }> {
     const attachments = await this.getAttachments(key);
-    const att = attachments.find(a => a.id === attachmentId);
+    const att = attachments.find((a) => a.id === attachmentId);
     const name = att?.name ?? 'attachment';
     const { data } = await this.http.get(att?.content ?? `/attachments/${attachmentId}`, {
       responseType: 'stream',

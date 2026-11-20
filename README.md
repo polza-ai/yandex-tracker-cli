@@ -322,7 +322,7 @@ git clone https://github.com/polza-ai/yandex-tracker-cli.git
 cd yandex-tracker-cli
 npm install
 
-npm run dev -- tasks --assignee me   # запуск через tsx
+npm run dev -- tasks --assignee me   # сборка Rolldown и запуск CLI
 npm run build                        # компиляция в dist/
 npm run typecheck                    # проверка типов
 npm test                             # тесты (Vitest)
@@ -332,7 +332,7 @@ npm test                             # тесты (Vitest)
 
 ## Требования
 
-- **Node.js** 20+
+- **Node.js** 22.12+
 - **Токен** Яндекс Трекера — OAuth или [IAM](https://yandex.cloud/docs/iam/concepts/authorization/iam-token) (для Yandex Cloud)
 
 ## Лицензия
